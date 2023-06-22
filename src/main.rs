@@ -22,6 +22,44 @@ impl Add for Pos2 {
         }
     }
 }
+
+struct Queue{
+    commands: Vec<InputCommand>,
+    marker: usize, //points to the first element in the queue
+}
+
+impl Queue{
+    fn new() -> Self{
+        Self{
+            commands: Vec::new(),
+            marker: 0,
+        }
+    }
+
+    fn push(&mut self, command: InputCommand){
+        self.commands.push(command);
+    }
+
+    fn pop(&mut self) -> InputCommand{
+        let old_marker = self.marker;
+        self.marker += 1;
+        self.commands[old_marker]
+    }
+
+    fn get_number_of(&self, command: InputCommand) -> usize{
+        let mut total_num: usize = 0;
+        for element in self.commands.iter(){
+            if *element == command{
+                total_num += 1;
+            }
+        }
+        total_num
+    }
+
+    fn size(&self) -> usize{
+        self.commands.len()
+    }
+}
 //(NOTE): how coordinate system works
 //(0, 0) top-left
 const CHUNK_WIDTH: usize = 32;
@@ -38,11 +76,14 @@ struct GameState {
 
 const ENEMY_SYMBOL: char = '@';
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 enum InputCommand {
-    PlayerRight,
-    PlayerLeft,
-    PlayerUp,
-    PlayerDown,
+    Right,
+    Left,
+    Up,
+    Down,
+    Wait,
+    Quit
 }
 
 fn find_closest_position_to_player(enemy: &Pos2, player: &Pos2) -> Pos2 {
@@ -73,7 +114,7 @@ fn find_closest_position_to_player(enemy: &Pos2, player: &Pos2) -> Pos2 {
 }
 
 fn check_for_starting_command_letters(c: &char) -> bool {
-    c == &'r' || c == &'w' || c == &'d' || c == &'u' || c == &'l'
+    c == &'r' || c == &'w' || c == &'d' || c == &'u' || c == &'l' || c == &'q'
 }
 
 impl GameState {
@@ -112,10 +153,11 @@ impl GameState {
 
     fn update_hero(&mut self, input_command: InputCommand) {
         match input_command {
-            InputCommand::PlayerRight => self.player_pos.x += 1,
-            InputCommand::PlayerLeft => self.player_pos.x -= 1,
-            InputCommand::PlayerUp => self.player_pos.y -= 1,
-            InputCommand::PlayerDown => self.player_pos.y += 1,
+            InputCommand::Right => self.player_pos.x += 1,
+            InputCommand::Left => self.player_pos.x -= 1,
+            InputCommand::Up => self.player_pos.y -= 1,
+            InputCommand::Down => self.player_pos.y += 1,
+            _ => {let x = 3;},
         }
     }
 
@@ -124,20 +166,17 @@ impl GameState {
     }
 
     fn update_map(&mut self, command: String) -> bool {
-        //self.update_enemies();
         //(NOTE) commands available in map mode
-        let mut right_amount = 0;
-        let mut left_amount = 0;
-        let mut up_amount = 0;
-        let mut down_amount = 0;
-        let mut wait_amount = 0;
-        let mut quit_amount = 0;
         let mut current_number = 1;
+        let mut queue = Queue::new();
+
 
         let command: String = command.chars().filter(|c| !c.is_whitespace()).collect();
         for mut i in 0..command.chars().count() {
             let c = command.chars().nth(i).unwrap();
 
+            //(NOTE): doesn't work for two and more digit numbers
+            //(NOTE): there are some problems with the enemies
             if c.is_numeric() {
                 current_number = c as u32 - '0' as u32;
             } else if check_for_starting_command_letters(&c) {
@@ -147,7 +186,9 @@ impl GameState {
                     command.chars().nth(i + 3).unwrap() == 'h' &&
                     command.chars().nth(i + 4).unwrap() == 't'
                 {
-                    right_amount += current_number;
+                    for _ in 0..current_number{
+                        queue.push(InputCommand::Right);
+                    }
                     current_number = 1;
                     i += 4;
                     continue;
@@ -158,7 +199,9 @@ impl GameState {
                         command.chars().nth(i + 2).unwrap() == 'f' &&
                         command.chars().nth(i + 3).unwrap() == 't'
                 {
-                    left_amount += current_number;
+                    for _ in 0..current_number{
+                        queue.push(InputCommand::Left);
+                    }
                     current_number = 1;
                     i += 3;
                     continue;
@@ -167,7 +210,9 @@ impl GameState {
                 else if c == 'u' &&
                     command.chars().nth(i + 1).unwrap() == 'p'
                 {
-                    up_amount += current_number;
+                    for _ in 0..current_number{
+                        queue.push(InputCommand::Up);
+                    }
                     current_number = 1;
                     i += 1;
                     continue;
@@ -178,7 +223,9 @@ impl GameState {
                     command.chars().nth(i + 2).unwrap() == 'w' &&
                     command.chars().nth(i + 3).unwrap() == 'n'
                 {
-                    down_amount += current_number;
+                    for _ in 0..current_number{
+                        queue.push(InputCommand::Down);
+                    }
                     current_number = 1;
                     i += 3;
                     continue;
@@ -190,7 +237,9 @@ impl GameState {
                     command.chars().nth(i + 2).unwrap() == 'i' &&
                     command.chars().nth(i + 3).unwrap() == 't'
                 {
-                    wait_amount += current_number;
+                    for _ in 0..current_number{
+                        queue.push(InputCommand::Wait);
+                    }
                     current_number = 1;
                     i += 3;
                     continue;
@@ -202,7 +251,7 @@ impl GameState {
                     command.chars().nth(i + 2).unwrap() == 'i' &&
                     command.chars().nth(i + 3).unwrap() == 't'
                 {
-                    quit_amount = 1;
+                    queue.push(InputCommand::Quit);
                     current_number = 1;
                     println!("quit");
                     i += 3;
@@ -211,30 +260,18 @@ impl GameState {
                 }
             }
         }
-        println!("right amount {}, left amount {}, up amount {}, down amount {}, wait amount {} quit amount {}", right_amount, left_amount, up_amount, down_amount, wait_amount, quit_amount);
+        println!("right amount {}", queue.get_number_of(InputCommand::Right));
+        
+        for _ in 0..queue.size(){
+            let command: InputCommand = queue.pop();
+            if command == InputCommand::Quit{
+                assert!(false);
+            }else{
+                self.update_hero(command);
+            }
 
-        //println!("{}", command);
-
-        //keyboard input
-        /*
-        if command.contains("right") {
-            self.update_hero(InputCommand::PlayerRight);
-            return true;
-        } else if command.contains("left") {
-            self.update_hero(InputCommand::PlayerLeft);
-            return true;
-        } else if command.contains("up") {
-            self.update_hero(InputCommand::PlayerUp);
-            return true;
-        } else if command.contains("down") {
-            self.update_hero(InputCommand::PlayerDown);
-            return true;
-        } else if command.contains("quit") {
-            return false;
-        } else if command.contains("wait") {
-            return true;
+            self.update_enemies();
         }
-        */
         true
     }
 
@@ -277,10 +314,10 @@ fn read_user_input() -> String {
 
 fn main() {
     let mut state = GameState::new();
-    let enemy_index = state.add_enemy(Pos2::new(3, 3));
+    //let enemy_index = state.add_enemy(Pos2::new(3, 3));
     let mut playing = true;
-    //while playing == true {
-    //state.render_map();
-    playing = state.update_map(read_user_input());
-    //}
+    while playing == true {
+        state.render_map();
+        playing = state.update_map(read_user_input());
+    }
 }
