@@ -34,7 +34,7 @@ pub fn get_parsed_user_input_map() -> data_structures::Queue{
         let mut queue = data_structures::Queue::new();
         let mut i = 0;
 
-        let mut command: String = read_user_input().chars().filter(|c| !c.is_whitespace()).collect();
+        let command: String = read_user_input().chars().filter(|c| !c.is_whitespace()).collect();
 
         while i < command.chars().count() {
             //println!("i equals {}", i);
@@ -134,7 +134,6 @@ pub fn get_parsed_user_input_map() -> data_structures::Queue{
                 {
                     queue.push(InputCommand::Quit);
                     current_number = 1;
-                    println!("quit");
                     i += 4;
                     continue;
                 }            

@@ -19,38 +19,76 @@ struct GameState {
 }
 
 const ENEMY_SYMBOL: char = '@';
+const PLAYER_SYMBOL: char = '0';
+const GRASS_SYMBOL: char = 'x';
 
-//(NOTE): the algorith works by moving enemy to player's y axis and then moving verticallly
-//I think I would prefer to move enemy by the axis that is closest to player
-//aka if the difference in (2, 4) we should move vertically (changing y)
 fn find_closest_position_to_player(enemy: &math::Pos2, player: &math::Pos2) -> math::Pos2 {
+    //println!("Player coordinates: {} | {} \n Enemy coordinates: {} | {}", player.x, player.y, enemy.x, enemy.y);
     let diff_x = (enemy.x - player.x).abs();
     let diff_y = (enemy.y - player.y).abs();
-    println!("Diff_x {} diff_y {}", diff_x, diff_y);
+    //println!("Diff_x {} diff_y {}", diff_x, diff_y);
 
-    //we are standing on the player
+    //SPECIAL CASE WHEN ENEMY SPAWNS AT PLAYER POSITION
     if diff_x == 0 && diff_y == 0 {
-        println!("We are standing on the player");
+        assert!(false, "Enemy spawned at player position");
         return math::Pos2::new(0, 0);
     }
 
-    //we only need to move up and down now
-    if diff_x == 0 {
-        if enemy.y > player.y {
-            math::Pos2::new(0, -1)
-        } else {
-            math::Pos2::new(0, 1)
+    //move on the y_xis
+    if diff_y > diff_x{
+        if player.y > enemy.y{
+            let offset = math::Pos2::new(0, 1);
+            let pos_with_offset = math::Pos2::new(enemy.x + offset.x, enemy.y + offset.y);
+
+            if player.x == pos_with_offset.x && player.y == pos_with_offset.y{
+                assert!(false, "Enemy caught the player");
+                return math::Pos2::new(0, 0);
+            }else{
+                return offset
+            }
         }
-    } else if enemy.x > player.x {
-        math::Pos2::new(-1, 0)
-    } else {
-        math::Pos2::new(1, 0)
+        else{
+            let offset = math::Pos2::new(0, -1);
+            let pos_with_offset = math::Pos2::new(enemy.x + offset.x, enemy.y + offset.y);
+
+            if player.x == pos_with_offset.x && player.y == pos_with_offset.y{
+                assert!(false, "Enemy caught the player");
+                return math::Pos2::new(0, 0);
+            }else{
+                return offset
+            }
+        }
+    }
+    else{
+        if player.x > enemy.x{
+            let offset = math::Pos2::new(1, 0);
+            let pos_with_offset = math::Pos2::new(enemy.x + offset.x, enemy.y + offset.y);
+
+            if player.x == pos_with_offset.x && player.y == pos_with_offset.y{
+                assert!(false, "Enemy caught the player");
+                return math::Pos2::new(0, 0);
+            }else{
+                return offset
+            }
+            return math::Pos2::new(1, 0);
+        }
+        else{
+            let offset = math::Pos2::new(-1, 0);
+            let pos_with_offset = math::Pos2::new(enemy.x + offset.x, enemy.y + offset.y);
+
+            if player.x == pos_with_offset.x && player.y == pos_with_offset.y{
+                assert!(false, "Enemy caught the player");
+                return math::Pos2::new(0, 0);
+            }else{
+                return offset
+            }
+        }
     }
 }
 
 impl GameState {
     fn new() -> Self {
-        let mut repr_no_newline = [['x'; CHUNK_WIDTH_NEWLINE]; CHUNK_HEIGHT];
+        let mut repr_no_newline = [[GRASS_SYMBOL; CHUNK_WIDTH_NEWLINE]; CHUNK_HEIGHT];
         for i in 0..CHUNK_HEIGHT {
             repr_no_newline[i][CHUNK_WIDTH] = '\n';
         }
@@ -90,34 +128,37 @@ impl GameState {
             input_parser::InputCommand::Up => self.player_pos.y -= 1,
             input_parser::InputCommand::Down => self.player_pos.y += 1,
             _ => {
-                let x = 3;
+                let _ = 3;
             }
         }
     }
 
     fn render_hero(&mut self) {
-        self.map_repr[self.player_pos.y as usize][self.player_pos.x as usize] = '0';
+        self.map_repr[self.player_pos.y as usize][self.player_pos.x as usize] = PLAYER_SYMBOL;
     }
 
-    fn update_map(&mut self){
+    fn update_map(&mut self) -> bool{
         let mut queue = input_parser::get_parsed_user_input_map();
         
             for _ in 0..queue.size() {
                 let command: input_parser::InputCommand = queue.pop();
                 if command == input_parser::InputCommand::Quit {
-                    assert!(false);
+                    return false;
                 } else {
                     self.update_hero(command);
                 }
 
                 self.update_enemies();
+
+                println!("player pos ({}, {}) \n enemy pos ({}, {})", self.player_pos.x, self.player_pos.y, self.enemies[0].x, self.enemies[0].y);
             }
+        true
     }
 
     fn flush_map(&mut self) {
         for i in 0..CHUNK_WIDTH_NEWLINE {
             for j in 0..CHUNK_HEIGHT {
-                self.map_repr[j][i] = 'x';
+                self.map_repr[j][i] = GRASS_SYMBOL;
             }
         }
 
@@ -140,9 +181,10 @@ impl GameState {
 
 fn main() {
     let mut state = GameState::new();
-    //let enemy_index = state.add_enemy(math::Pos2::new(3, 3));
-    loop{
+    let enemy_index = state.add_enemy(math::Pos2::new(5, 7));
+    let mut playing = true;
+    while playing{
         state.render_map();
-        state.update_map();
+        playing = state.update_map();
     }
 }
