@@ -1,8 +1,8 @@
 use arrayvec::ArrayVec;
 
 mod data_structures;
-mod math;
 mod input_parser;
+mod math;
 
 //(NOTE): how coordinate system works
 //(0, 0) top-left
@@ -35,53 +35,45 @@ fn find_closest_position_to_player(enemy: &math::Pos2, player: &math::Pos2) -> m
     }
 
     //move on the y_xis
-    if diff_y > diff_x{
-        if player.y > enemy.y{
+    if diff_y > diff_x {
+        if player.y > enemy.y {
             let offset = math::Pos2::new(0, 1);
             let pos_with_offset = math::Pos2::new(enemy.x + offset.x, enemy.y + offset.y);
 
-            if player.x == pos_with_offset.x && player.y == pos_with_offset.y{
+            if player.x == pos_with_offset.x && player.y == pos_with_offset.y {
                 assert!(false, "Enemy caught the player");
-                return math::Pos2::new(0, 0);
-            }else{
-                return offset
+                math::Pos2::new(0, 0)
+            } else {
+                offset
             }
-        }
-        else{
+        } else {
             let offset = math::Pos2::new(0, -1);
             let pos_with_offset = math::Pos2::new(enemy.x + offset.x, enemy.y + offset.y);
 
-            if player.x == pos_with_offset.x && player.y == pos_with_offset.y{
+            if player.x == pos_with_offset.x && player.y == pos_with_offset.y {
                 assert!(false, "Enemy caught the player");
-                return math::Pos2::new(0, 0);
-            }else{
-                return offset
+                math::Pos2::new(0, 0)
+            } else {
+                offset
             }
         }
-    }
-    else{
-        if player.x > enemy.x{
-            let offset = math::Pos2::new(1, 0);
-            let pos_with_offset = math::Pos2::new(enemy.x + offset.x, enemy.y + offset.y);
-
-            if player.x == pos_with_offset.x && player.y == pos_with_offset.y{
-                assert!(false, "Enemy caught the player");
-                return math::Pos2::new(0, 0);
-            }else{
-                return offset
-            }
-            return math::Pos2::new(1, 0);
+    } else if player.x > enemy.x {
+        let offset = math::Pos2::new(1, 0);
+        let pos_with_offset = math::Pos2::new(enemy.x + offset.x, enemy.y + offset.y);
+        if player.x == pos_with_offset.x && player.y == pos_with_offset.y {
+            assert!(false, "Enemy caught the player");
+            math::Pos2::new(0, 0)
+        } else {
+            offset
         }
-        else{
-            let offset = math::Pos2::new(-1, 0);
-            let pos_with_offset = math::Pos2::new(enemy.x + offset.x, enemy.y + offset.y);
-
-            if player.x == pos_with_offset.x && player.y == pos_with_offset.y{
-                assert!(false, "Enemy caught the player");
-                return math::Pos2::new(0, 0);
-            }else{
-                return offset
-            }
+    } else {
+        let offset = math::Pos2::new(-1, 0);
+        let pos_with_offset = math::Pos2::new(enemy.x + offset.x, enemy.y + offset.y);
+        if player.x == pos_with_offset.x && player.y == pos_with_offset.y {
+            assert!(false, "Enemy caught the player");
+            math::Pos2::new(0, 0)
+        } else {
+            offset
         }
     }
 }
@@ -137,21 +129,24 @@ impl GameState {
         self.map_repr[self.player_pos.y as usize][self.player_pos.x as usize] = PLAYER_SYMBOL;
     }
 
-    fn update_map(&mut self) -> bool{
+    fn update_map(&mut self) -> bool {
         let mut queue = input_parser::get_parsed_user_input_map();
-        
-            for _ in 0..queue.size() {
-                let command: input_parser::InputCommand = queue.pop();
-                if command == input_parser::InputCommand::Quit {
-                    return false;
-                } else {
-                    self.update_hero(command);
-                }
 
-                self.update_enemies();
-
-                println!("player pos ({}, {}) \n enemy pos ({}, {})", self.player_pos.x, self.player_pos.y, self.enemies[0].x, self.enemies[0].y);
+        for _ in 0..queue.size() {
+            let command: input_parser::InputCommand = queue.pop();
+            if command == input_parser::InputCommand::Quit {
+                return false;
+            } else {
+                self.update_hero(command);
             }
+
+            self.update_enemies();
+
+            println!(
+                "player pos ({}, {}) \n enemy pos ({}, {})",
+                self.player_pos.x, self.player_pos.y, self.enemies[0].x, self.enemies[0].y
+            );
+        }
         true
     }
 
@@ -178,12 +173,11 @@ impl GameState {
     }
 }
 
-
 fn main() {
     let mut state = GameState::new();
     let enemy_index = state.add_enemy(math::Pos2::new(5, 7));
     let mut playing = true;
-    while playing{
+    while playing {
         state.render_map();
         playing = state.update_map();
     }
