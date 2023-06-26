@@ -18,34 +18,50 @@ fn read_user_input() -> String {
 }
 
 fn check_for_starting_command_letters(c: &char) -> bool {
-    c == &'r' || c == &'w' || c == &'d' || c == &'u' || c == &'l' || c == &'q'
+    c == &'r' || c == &'w' || c == &'d' || c == &'u' || c == &'l' || c == &'q' || c == &'i'
 }
 
-enum MessageError {
-    OnlyNumber,
+enum Message {
+    ErrorOnlyNumber,
     IncorrectCommand,
     CommandTypedIncorrectly,
+    GameTutorial,
 }
 
-fn show_helpful_message(error: MessageError) {
-    match error {
-        MessageError::OnlyNumber => {
+fn show_helpful_message(message: Message) {
+    match message {
+        Message::ErrorOnlyNumber => {
             println!("-------------------------------");
             println!("CommandError: number only given");
             println!("\nAfter typing the number \nyou should type the command \nyou want to do \n(ex. 10 right)\n(moving right ten units)");
             println!("-------------------------------");
         }
-        MessageError::IncorrectCommand => {
+        Message::IncorrectCommand => {
             println!("-------------------------------");
             println!("CommandError: incorrect command");
             println!("\ncommands should look like this:\n2 right 5 up\nfor going 2 units right and 2 up\nfor more commands check \n'info' command or info in menu");
             println!("-------------------------------");
         }
-        MessageError::CommandTypedIncorrectly => {
+        Message::CommandTypedIncorrectly => {
             println!("-------------------------------");
             println!("CommandError: command typed incorrectly");
             println!("\nupps, a misstroke \njust write the command again\nor check 'info' to see\nhow to write the commands");
             println!("-------------------------------");
+        }
+        Message::GameTutorial => {
+            println!("----------------------------------------------------");
+            println!("                    Game tutorial");
+            println!("\nIn this game you have a few commands incluing");
+            println!("right - moving right");
+            println!("left - moving left");
+            println!("up - moving up");
+            println!("down - moving down");
+            println!("wait - waiting a game tick without doing anything");
+            println!("info - showing this tutorial :>");
+            println!("quit - quitting the game\n");
+            println!("The game updates whenever you send a command\nwe call that game tick\n");
+            println!("You can use a single command multiple times ex\n3 right 2 up\nmoves right 3 times and up 2 times");
+            println!("----------------------------------------------------");
         }
     }
 }
@@ -58,7 +74,7 @@ fn check_if_char_is_correct(char_option: Option<char>, char_to_compare: char) ->
             }
         }
         None => {
-            show_helpful_message(MessageError::IncorrectCommand);
+            show_helpful_message(Message::IncorrectCommand);
             return false;
         }
     }
@@ -102,7 +118,7 @@ pub fn get_parsed_user_input_map() -> data_structures::Queue {
                         }
                     },
                     None => {
-                        show_helpful_message(MessageError::OnlyNumber);
+                        show_helpful_message(Message::ErrorOnlyNumber);
                         return get_parsed_user_input_map();
                     }
                 }
@@ -114,7 +130,7 @@ pub fn get_parsed_user_input_map() -> data_structures::Queue {
             match is_starting_command_letter {
                 true => (),
                 false => {
-                    show_helpful_message(MessageError::IncorrectCommand);
+                    show_helpful_message(Message::IncorrectCommand);
                     return get_parsed_user_input_map();
                 }
             }
@@ -139,7 +155,7 @@ pub fn get_parsed_user_input_map() -> data_structures::Queue {
                 match wrong_letter_after_command {
                     Some(letter) => {
                         if !letter.is_numeric() {
-                            show_helpful_message(MessageError::CommandTypedIncorrectly);
+                            show_helpful_message(Message::CommandTypedIncorrectly);
                             return get_parsed_user_input_map();
                         }
                     }
@@ -169,7 +185,7 @@ pub fn get_parsed_user_input_map() -> data_structures::Queue {
                 match wrong_letter_after_command {
                     Some(letter) => {
                         if !letter.is_numeric() {
-                            show_helpful_message(MessageError::CommandTypedIncorrectly);
+                            show_helpful_message(Message::CommandTypedIncorrectly);
                             return get_parsed_user_input_map();
                         }
                     }
@@ -192,7 +208,7 @@ pub fn get_parsed_user_input_map() -> data_structures::Queue {
                 match wrong_letter_after_command {
                     Some(letter) => {
                         if !letter.is_numeric() {
-                            show_helpful_message(MessageError::CommandTypedIncorrectly);
+                            show_helpful_message(Message::CommandTypedIncorrectly);
                             return get_parsed_user_input_map();
                         }
                     }
@@ -221,7 +237,7 @@ pub fn get_parsed_user_input_map() -> data_structures::Queue {
                 match wrong_letter_after_command {
                     Some(letter) => {
                         if !letter.is_numeric() {
-                            show_helpful_message(MessageError::CommandTypedIncorrectly);
+                            show_helpful_message(Message::CommandTypedIncorrectly);
                             return get_parsed_user_input_map();
                         }
                     }
@@ -250,7 +266,7 @@ pub fn get_parsed_user_input_map() -> data_structures::Queue {
                 match wrong_letter_after_command {
                     Some(letter) => {
                         if !letter.is_numeric() {
-                            show_helpful_message(MessageError::CommandTypedIncorrectly);
+                            show_helpful_message(Message::CommandTypedIncorrectly);
                             return get_parsed_user_input_map();
                         }
                     }
@@ -279,13 +295,38 @@ pub fn get_parsed_user_input_map() -> data_structures::Queue {
                 match wrong_letter_after_command {
                     Some(letter) => {
                         if !letter.is_numeric() {
-                            show_helpful_message(MessageError::CommandTypedIncorrectly);
+                            show_helpful_message(Message::CommandTypedIncorrectly);
                             return get_parsed_user_input_map();
                         }
                     }
                     None => (),
                 }
                 queue.push(InputCommand::Quit);
+                current_number = 1;
+                i += 4;
+                continue;
+            }
+            else if c == 'i'{
+                if !check_if_char_is_correct(command.chars().nth(i + 1), 'n'){
+                    return get_parsed_user_input_map();
+                }
+                if !check_if_char_is_correct(command.chars().nth(i + 2), 'f'){
+                    return get_parsed_user_input_map();
+                }
+                if !check_if_char_is_correct(command.chars().nth(i + 3), 'o'){
+                    return get_parsed_user_input_map();
+                }
+                let wrong_letter_after_command = command.chars().nth(i + 5);
+                match wrong_letter_after_command {
+                    Some(letter) => {
+                        if !letter.is_numeric() {
+                            show_helpful_message(Message::CommandTypedIncorrectly);
+                            return get_parsed_user_input_map();
+                        }
+                    }
+                    None => (),
+                }
+                show_helpful_message(Message::GameTutorial);
                 current_number = 1;
                 i += 4;
                 continue;
