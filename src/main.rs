@@ -13,6 +13,7 @@ mod level_parser;
 
 struct GameState {
     map: Vec<char>,
+    map_dimensions: math::Pos2,
     player_pos: math::Pos2,
     enemy_manager: enemy::EnemyManager,
 }
@@ -23,17 +24,16 @@ const GRASS_SYMBOL: char = 'x';
 
 impl GameState {
     fn new() -> Self {
-        let enemy_manager = enemy::EnemyManager::new(ENEMY_SYMBOL, 1);
-        let map = level_parser::parse_level();
+        let (map, info) = level_parser::parse_level(PLAYER_SYMBOL, ENEMY_SYMBOL);
+        let player_pos = info.player;
+        let map_dimensions = info.map_dimensions;
+        let enemy_manager = enemy::EnemyManager::new(info.enemies);
         Self {
             map,
-            player_pos: math::Pos2::new(0, 0),
+            player_pos,
+            map_dimensions,
             enemy_manager,
         }
-    }
-
-    fn add_enemy(&mut self, pos: math::Pos2) -> usize {
-        self.enemy_manager.add_enemy(pos)
     }
 
     fn update_enemies(&mut self) {
@@ -41,12 +41,16 @@ impl GameState {
     }
 
     fn render_enemies(&mut self) {
-        /*
+        let width_usize: usize = self.map_dimensions.x.try_into().unwrap();
+
         for i in 0..self.enemy_manager.size(){
             let enemy = self.enemy_manager.get_enemy(i);
-            self.map_repr[enemy.y as usize][enemy.x as usize] = ENEMY_SYMBOL;
+
+            let y: usize = enemy.y.try_into().unwrap();
+            let x: usize = enemy.x.try_into().unwrap();
+
+            self.map[y * width_usize + x] = ENEMY_SYMBOL;
         }
-        */
     }
 
     fn update_hero(&mut self, input_command: input_parser::InputCommand) {
@@ -62,7 +66,10 @@ impl GameState {
     }
 
     fn render_hero(&mut self) {
-        //self.map_repr[self.player_pos.y as usize][self.player_pos.x as usize] = PLAYER_SYMBOL;
+        let width_usize: usize = self.map_dimensions.x.try_into().unwrap();
+        let y: usize = self.player_pos.y.try_into().unwrap();
+        let x: usize = self.player_pos.x.try_into().unwrap();
+        self.map[y * width_usize + x] = PLAYER_SYMBOL;
     }
 
     fn update_map(&mut self) -> bool {
@@ -82,17 +89,13 @@ impl GameState {
     }
 
     fn flush_map(&mut self) {
-        /*
-        for i in 0..CHUNK_WIDTH_NEWLINE {
-            for j in 0..CHUNK_HEIGHT {
-                self.map_repr[j][i] = GRASS_SYMBOL;
-            }
-        }
+        self.map.iter_mut().for_each(|c| *c = 'x');
 
-        for i in 0..CHUNK_HEIGHT {
-            self.map_repr[i][CHUNK_WIDTH] = '\n';
-        }
-        */
+        let width_usize: usize = self.map_dimensions.x.try_into().unwrap();
+        let mut index: usize;
+        for i in 0..self.map_dimensions.y {
+            self.map[i as usize * (width_usize + 1) + width_usize] = '\n';
+        }  
     }
 
     fn render_map(&mut self) {
@@ -107,7 +110,6 @@ impl GameState {
 
 fn main() {
     let mut state = GameState::new();
-    let enemy_index = state.add_enemy(math::Pos2::new(5, 7));
     let mut playing = true;
     while playing {
         state.render_map();

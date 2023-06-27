@@ -3,23 +3,15 @@ use crate::math;
 pub struct EnemyManager{
     enemies: Vec<math::Pos2>,
     current_enemy_index: usize,
-    enemy_symbol: char
 }
 
 impl EnemyManager{
-    pub fn new(symbol: char, enemy_count: usize) -> Self{
+    pub fn new(enemies: Vec<math::Pos2>) -> Self{
+        let current_enemy_index = enemies.len();
         Self{
-            enemies: Vec::with_capacity(enemy_count),
-            current_enemy_index: 0,
-            enemy_symbol: symbol,
+            enemies,
+            current_enemy_index,
         }
-    }
-    
-    pub fn add_enemy(&mut self, pos: math::Pos2) -> usize{
-        self.enemies.push(pos);
-        let index = self.current_enemy_index;
-        self.current_enemy_index += 1;
-        index
     }
     
     pub fn update_enemies(&mut self, player_pos: &math::Pos2){
