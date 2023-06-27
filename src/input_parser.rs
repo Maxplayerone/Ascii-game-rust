@@ -66,19 +66,20 @@ fn show_helpful_message(message: Message) {
     }
 }
 
-fn check_if_char_is_correct(char_option: Option<char>, char_to_compare: char) -> bool {
+fn check_if_char_is_correct(char_option: Option<char>, char_to_compare: char) -> Option<Message> {
     match char_option {
         Some(c) => {
             if c == char_to_compare {
-                ()
+                return None;
+            }
+            else {
+                return Some(Message::CommandTypedIncorrectly);
             }
         }
         None => {
-            show_helpful_message(Message::IncorrectCommand);
-            return false;
+            return Some(Message::IncorrectCommand);
         }
     }
-    true
 }
 
 pub fn get_parsed_user_input_map() -> data_structures::Queue {
@@ -137,19 +138,24 @@ pub fn get_parsed_user_input_map() -> data_structures::Queue {
             //right
             if c == 'r' {
                 //checking if the command is right
-                if !check_if_char_is_correct(command.chars().nth(i + 1), 'i'){
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 1), 'i'){
+                    show_helpful_message(message);
+                    return get_parsed_user_input_map();
+                }              
+                
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 2), 'g'){
+                    show_helpful_message(message);
                     return get_parsed_user_input_map();
                 }
-                if !check_if_char_is_correct(command.chars().nth(i + 2), 'g'){
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 3), 'h'){
+                    show_helpful_message(message);
                     return get_parsed_user_input_map();
                 }
-                if !check_if_char_is_correct(command.chars().nth(i + 3), 'h'){
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 4), 't'){
+                    show_helpful_message(message);
                     return get_parsed_user_input_map();
                 }
-                if !check_if_char_is_correct(command.chars().nth(i + 4), 't'){
-                    return get_parsed_user_input_map();
-                }
-
+                
                 //checking if the last letter is wrong
                 let wrong_letter_after_command = command.chars().nth(i + 5);
                 match wrong_letter_after_command {
@@ -169,16 +175,20 @@ pub fn get_parsed_user_input_map() -> data_structures::Queue {
                 i += 5;
                 continue;
             }
+            
             //left
             else if c == 'l'
             {
-                if !check_if_char_is_correct(command.chars().nth(i + 1), 'e'){
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 1), 'e'){
+                    show_helpful_message(message);
                     return get_parsed_user_input_map();
                 }
-                if !check_if_char_is_correct(command.chars().nth(i + 2), 'f'){
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 2), 'f'){
+                    show_helpful_message(message);
                     return get_parsed_user_input_map();
                 }
-                if !check_if_char_is_correct(command.chars().nth(i + 3), 't'){
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 3), 't'){
+                    show_helpful_message(message);
                     return get_parsed_user_input_map();
                 }
                 let wrong_letter_after_command = command.chars().nth(i + 5);
@@ -200,7 +210,8 @@ pub fn get_parsed_user_input_map() -> data_structures::Queue {
             }
             //up
             else if c == 'u'{
-                if !check_if_char_is_correct(command.chars().nth(i + 1), 'p'){
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 1), 'p'){
+                    show_helpful_message(message);
                     return get_parsed_user_input_map();
                 }
 
@@ -224,13 +235,16 @@ pub fn get_parsed_user_input_map() -> data_structures::Queue {
             //down
             else if c == 'd'
             {
-                if !check_if_char_is_correct(command.chars().nth(i + 1), 'o'){
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 1), 'o'){
+                    show_helpful_message(message);
                     return get_parsed_user_input_map();
                 }
-                if !check_if_char_is_correct(command.chars().nth(i + 2), 'w'){
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 2), 'w'){
+                    show_helpful_message(message);
                     return get_parsed_user_input_map();
                 }
-                if !check_if_char_is_correct(command.chars().nth(i + 3), 'n'){
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 3), 'n'){
+                    show_helpful_message(message);
                     return get_parsed_user_input_map();
                 }
                 let wrong_letter_after_command = command.chars().nth(i + 5);
@@ -253,13 +267,16 @@ pub fn get_parsed_user_input_map() -> data_structures::Queue {
             //wait
             else if c == 'w'
             {
-                if !check_if_char_is_correct(command.chars().nth(i + 1), 'a'){
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 1), 'a'){
+                    show_helpful_message(message);
                     return get_parsed_user_input_map();
                 }
-                if !check_if_char_is_correct(command.chars().nth(i + 2), 'i'){
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 2), 'i'){
+                    show_helpful_message(message);
                     return get_parsed_user_input_map();
                 }
-                if !check_if_char_is_correct(command.chars().nth(i + 3), 't'){
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 3), 't'){
+                    show_helpful_message(message);
                     return get_parsed_user_input_map();
                 }
                 let wrong_letter_after_command = command.chars().nth(i + 5);
@@ -282,13 +299,16 @@ pub fn get_parsed_user_input_map() -> data_structures::Queue {
             //quit
             else if c == 'q'
             {
-                if !check_if_char_is_correct(command.chars().nth(i + 1), 'u'){
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 1), 'u'){
+                    show_helpful_message(message);
                     return get_parsed_user_input_map();
                 }
-                if !check_if_char_is_correct(command.chars().nth(i + 2), 'i'){
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 2), 'i'){
+                    show_helpful_message(message);
                     return get_parsed_user_input_map();
                 }
-                if !check_if_char_is_correct(command.chars().nth(i + 3), 't'){
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 3), 't'){
+                    show_helpful_message(message);
                     return get_parsed_user_input_map();
                 }
                 let wrong_letter_after_command = command.chars().nth(i + 5);
@@ -307,13 +327,17 @@ pub fn get_parsed_user_input_map() -> data_structures::Queue {
                 continue;
             }
             else if c == 'i'{
-                if !check_if_char_is_correct(command.chars().nth(i + 1), 'n'){
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 1), 'n'){
+                    show_helpful_message(message);
                     return get_parsed_user_input_map();
                 }
-                if !check_if_char_is_correct(command.chars().nth(i + 2), 'f'){
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 2), 'f'){
+                    show_helpful_message(message);
                     return get_parsed_user_input_map();
                 }
-                if !check_if_char_is_correct(command.chars().nth(i + 3), 'o'){
+
+                if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 3), 'o'){
+                    show_helpful_message(message);
                     return get_parsed_user_input_map();
                 }
                 let wrong_letter_after_command = command.chars().nth(i + 5);
@@ -331,6 +355,7 @@ pub fn get_parsed_user_input_map() -> data_structures::Queue {
                 i += 4;
                 continue;
             }
+            
         }
         i += 1;
     }
