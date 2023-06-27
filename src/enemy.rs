@@ -1,31 +1,31 @@
 use crate::math;
 
-pub struct EnemyManager{
+pub struct EnemyManager {
     enemies: Vec<math::Pos2>,
     current_enemy_index: usize,
 }
 
-impl EnemyManager{
-    pub fn new(enemies: Vec<math::Pos2>) -> Self{
+impl EnemyManager {
+    pub fn new(enemies: Vec<math::Pos2>) -> Self {
         let current_enemy_index = enemies.len();
-        Self{
+        Self {
             enemies,
             current_enemy_index,
         }
     }
-    
-    pub fn update_enemies(&mut self, player_pos: &math::Pos2){
-        for (index, enemy) in self.enemies.iter_mut().enumerate(){
+
+    pub fn update_enemies(&mut self, player_pos: &math::Pos2) {
+        for (index, enemy) in self.enemies.iter_mut().enumerate() {
             let pos = find_closest_position_to_player(enemy, player_pos);
             *enemy = *enemy + pos;
         }
     }
-    
-    pub fn get_enemy(&self, index: usize) -> &math::Pos2{
+
+    pub fn get_enemy(&self, index: usize) -> &math::Pos2 {
         &self.enemies[index]
-    } 
-    
-    pub fn size(&self) -> usize{
+    }
+
+    pub fn size(&self) -> usize {
         self.current_enemy_index
     }
 }

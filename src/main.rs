@@ -1,8 +1,8 @@
 mod data_structures;
-mod input_parser;
-mod math;
 mod enemy;
+mod input_parser;
 mod level_parser;
+mod math;
 
 //(NOTE): how coordinate system works
 //(0, 0) top-left
@@ -43,7 +43,7 @@ impl GameState {
     fn render_enemies(&mut self) {
         let width_usize: usize = self.map_dimensions.x.try_into().unwrap();
 
-        for i in 0..self.enemy_manager.size(){
+        for i in 0..self.enemy_manager.size() {
             let enemy = self.enemy_manager.get_enemy(i);
 
             let y: usize = enemy.y.try_into().unwrap();
@@ -73,17 +73,24 @@ impl GameState {
     }
 
     fn update_map(&mut self) -> bool {
-        let mut queue = input_parser::get_parsed_user_input_map();
+        let (mut queue, location_changer) = input_parser::get_parsed_user_input_map();
 
-        for _ in 0..queue.size() {
-            let command: input_parser::InputCommand = queue.pop();
-            if command == input_parser::InputCommand::Quit {
-                return false;
-            } else {
-                self.update_hero(command);
+        match location_changer {
+            Some(new_location) => {
+                println!("changing to inventory");
             }
+            None => {
+                for _ in 0..queue.size() {
+                    let command: input_parser::InputCommand = queue.pop();
+                    if command == input_parser::InputCommand::Quit {
+                        return false;
+                    } else {
+                        self.update_hero(command);
+                    }
 
-            self.update_enemies();
+                    self.update_enemies();
+                }
+            }
         }
         true
     }
@@ -95,7 +102,7 @@ impl GameState {
         let mut index: usize;
         for i in 0..self.map_dimensions.y {
             self.map[i as usize * (width_usize + 1) + width_usize] = '\n';
-        }  
+        }
     }
 
     fn render_map(&mut self) {
