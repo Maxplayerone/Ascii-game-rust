@@ -1,5 +1,8 @@
+use rand::Rng;
+
 use crate::data_structures;
-use crate::LocationType;
+use crate::inventory;
+use crate::{LocationType, ItemType};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum InputCommand {
@@ -82,7 +85,7 @@ fn check_if_char_is_correct(char_option: Option<char>, char_to_compare: char) ->
     }
 }
 
-pub fn get_parsed_user_input_map() -> (data_structures::Queue, Option<LocationType>) {
+pub fn get_parsed_user_input_map(inventory_manager: &mut inventory::InventoryManager) -> (data_structures::Queue, Option<LocationType>) {
     //(NOTE) commands available in map mode
     let mut current_number = 1;
     let mut queue = data_structures::Queue::new();
@@ -120,7 +123,7 @@ pub fn get_parsed_user_input_map() -> (data_structures::Queue, Option<LocationTy
                     },
                     None => {
                         show_helpful_message(Message::ErrorOnlyNumber);
-                        return get_parsed_user_input_map();
+                        return get_parsed_user_input_map(inventory_manager);
                     }
                 }
             }
@@ -132,7 +135,7 @@ pub fn get_parsed_user_input_map() -> (data_structures::Queue, Option<LocationTy
                 true => (),
                 false => {
                     show_helpful_message(Message::IncorrectCommand);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
             }
             //right
@@ -140,20 +143,52 @@ pub fn get_parsed_user_input_map() -> (data_structures::Queue, Option<LocationTy
                 //checking if the command is right
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 1), 'i') {
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
+                }
+
+                //(NOTE): TEMPORARY CODE
+                if let None = check_if_char_is_correct(command.chars().nth(i + 2), 'f') {
+                    //go on and on with other letters
+                    if let None = check_if_char_is_correct(command.chars().nth(i + 3), 'l') {
+                        if let None = check_if_char_is_correct(command.chars().nth(i + 4), 'e') {
+                            let wrong_letter_after_command = command.chars().nth(i + 5);
+                            match wrong_letter_after_command {
+                                Some(letter) => {
+                                    if !letter.is_numeric() {
+                                        show_helpful_message(Message::CommandTypedIncorrectly);
+                                        return get_parsed_user_input_map(inventory_manager);
+                                    }
+                                }
+                                None => {
+                                    let mut rng = rand::thread_rng();
+                                    let random_number = rng.gen_range(1..=5); 
+                                    match random_number{
+                                        1 => inventory_manager.add_node(ItemType::Rifle),
+                                        2 => inventory_manager.add_node(ItemType::SmallMed),
+                                        3 => inventory_manager.add_node(ItemType::BigMed),
+                                        4 => inventory_manager.add_node(ItemType::Sword),
+                                        5 => inventory_manager.add_node(ItemType::Shotgun),
+                                        _ => ()
+                                    }
+                                    i += 5;
+                                    continue;
+                                },
+                            }
+                        }
+                    }
                 }
 
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 2), 'g') {
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 3), 'h') {
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 4), 't') {
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
 
                 //checking if the last letter is wrong
@@ -162,7 +197,7 @@ pub fn get_parsed_user_input_map() -> (data_structures::Queue, Option<LocationTy
                     Some(letter) => {
                         if !letter.is_numeric() {
                             show_helpful_message(Message::CommandTypedIncorrectly);
-                            return get_parsed_user_input_map();
+                            return get_parsed_user_input_map(inventory_manager);
                         }
                     }
                     None => (),
@@ -179,22 +214,22 @@ pub fn get_parsed_user_input_map() -> (data_structures::Queue, Option<LocationTy
             else if c == 'l' {
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 1), 'e') {
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 2), 'f') {
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 3), 't') {
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
                 let wrong_letter_after_command = command.chars().nth(i + 5);
                 match wrong_letter_after_command {
                     Some(letter) => {
                         if !letter.is_numeric() {
                             show_helpful_message(Message::CommandTypedIncorrectly);
-                            return get_parsed_user_input_map();
+                            return get_parsed_user_input_map(inventory_manager);
                         }
                     }
                     None => (),
@@ -210,7 +245,7 @@ pub fn get_parsed_user_input_map() -> (data_structures::Queue, Option<LocationTy
             else if c == 'u' {
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 1), 'p') {
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
 
                 let wrong_letter_after_command = command.chars().nth(i + 5);
@@ -218,7 +253,7 @@ pub fn get_parsed_user_input_map() -> (data_structures::Queue, Option<LocationTy
                     Some(letter) => {
                         if !letter.is_numeric() {
                             show_helpful_message(Message::CommandTypedIncorrectly);
-                            return get_parsed_user_input_map();
+                            return get_parsed_user_input_map(inventory_manager);
                         }
                     }
                     None => (),
@@ -234,22 +269,22 @@ pub fn get_parsed_user_input_map() -> (data_structures::Queue, Option<LocationTy
             else if c == 'd' {
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 1), 'o') {
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 2), 'w') {
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 3), 'n') {
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
                 let wrong_letter_after_command = command.chars().nth(i + 5);
                 match wrong_letter_after_command {
                     Some(letter) => {
                         if !letter.is_numeric() {
                             show_helpful_message(Message::CommandTypedIncorrectly);
-                            return get_parsed_user_input_map();
+                            return get_parsed_user_input_map(inventory_manager);
                         }
                     }
                     None => (),
@@ -265,22 +300,22 @@ pub fn get_parsed_user_input_map() -> (data_structures::Queue, Option<LocationTy
             else if c == 'w' {
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 1), 'a') {
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 2), 'i') {
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 3), 't') {
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
                 let wrong_letter_after_command = command.chars().nth(i + 5);
                 match wrong_letter_after_command {
                     Some(letter) => {
                         if !letter.is_numeric() {
                             show_helpful_message(Message::CommandTypedIncorrectly);
-                            return get_parsed_user_input_map();
+                            return get_parsed_user_input_map(inventory_manager);
                         }
                     }
                     None => (),
@@ -296,22 +331,22 @@ pub fn get_parsed_user_input_map() -> (data_structures::Queue, Option<LocationTy
             else if c == 'q' {
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 1), 'u') {
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 2), 'i') {
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 3), 't') {
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
                 let wrong_letter_after_command = command.chars().nth(i + 5);
                 match wrong_letter_after_command {
                     Some(letter) => {
                         if !letter.is_numeric() {
                             show_helpful_message(Message::CommandTypedIncorrectly);
-                            return get_parsed_user_input_map();
+                            return get_parsed_user_input_map(inventory_manager);
                         }
                     }
                     None => (),
@@ -323,7 +358,7 @@ pub fn get_parsed_user_input_map() -> (data_structures::Queue, Option<LocationTy
             } else if c == 'i' {
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 1), 'n') {
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
                 //checking if the user wants to open the inventory
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 2), 'f') {
@@ -331,19 +366,19 @@ pub fn get_parsed_user_input_map() -> (data_structures::Queue, Option<LocationTy
                         return (queue, Some(LocationType::Inventory));
                     }
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
 
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 3), 'o') {
                     show_helpful_message(message);
-                    return get_parsed_user_input_map();
+                    return get_parsed_user_input_map(inventory_manager);
                 }
                 let wrong_letter_after_command = command.chars().nth(i + 5);
                 match wrong_letter_after_command {
                     Some(letter) => {
                         if !letter.is_numeric() {
                             show_helpful_message(Message::CommandTypedIncorrectly);
-                            return get_parsed_user_input_map();
+                            return get_parsed_user_input_map(inventory_manager);
                         }
                     }
                     None => (),

@@ -1,9 +1,9 @@
 mod data_structures;
 mod enemy;
 mod input_parser;
+mod inventory;
 mod level_parser;
 mod math;
-mod inventory;
 
 //(NOTE): how coordinate system works
 //(0, 0) top-left
@@ -24,6 +24,14 @@ pub enum LocationType {
     Inventory,
 }
 
+pub enum ItemType{
+    Rifle,
+    SmallMed,
+    BigMed,
+    Sword,
+    Shotgun,
+}
+
 const ENEMY_SYMBOL: char = '@';
 const PLAYER_SYMBOL: char = '0';
 const GRASS_SYMBOL: char = 'x';
@@ -35,7 +43,6 @@ impl GameState {
         let map_dimensions = info.map_dimensions;
         let enemy_manager = enemy::EnemyManager::new(info.enemies);
         let mut inventory_manager = inventory::InventoryManager::new();
-        inventory_manager.add_node();
         Self {
             map,
             player_pos,
@@ -90,8 +97,8 @@ impl GameState {
     }
 
     fn update_map(&mut self) -> bool {
-        let (mut queue, location_changer) = input_parser::get_parsed_user_input_map();
-        if let Some(location_changer) = location_changer{
+        let (mut queue, location_changer) = input_parser::get_parsed_user_input_map(&mut self.inventory_manager);
+        if let Some(location_changer) = location_changer {
             self.location_type = location_changer;
         }
 
