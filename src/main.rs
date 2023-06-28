@@ -32,6 +32,18 @@ pub enum ItemType{
     Shotgun,
 }
 
+impl ItemType{
+    pub fn string(&self) -> &str{
+        match self{
+            ItemType::Rifle => "Rifle",
+            ItemType::SmallMed => "Small med",
+            ItemType::BigMed => "Big med",
+            ItemType::Sword => "Sword",
+            ItemType::Shotgun => "Shotgun",
+        }
+    }
+}
+
 const ENEMY_SYMBOL: char = '@';
 const PLAYER_SYMBOL: char = '0';
 const GRASS_SYMBOL: char = 'x';

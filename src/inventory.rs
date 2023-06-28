@@ -1,6 +1,52 @@
 use std::io::{self, BufRead};
 use crate::ItemType;
 
+struct ItemDescriptor{
+    durability: i32,
+    damage: Option<i32>,
+    healing: Option<i32>,
+}
+
+fn get_item_description(item_type: &ItemType) -> ItemDescriptor{
+    match item_type{
+        ItemType::Rifle => {
+            ItemDescriptor{
+                durability: 5,
+                damage: Some(30),
+                healing: None,
+            }
+        },
+        ItemType::SmallMed => {
+            ItemDescriptor{
+                durability: 1,
+                damage: None,
+                healing: Some(20),
+            }
+        },
+        ItemType::BigMed => {
+            ItemDescriptor{
+                durability: 1,
+                damage: None,
+                healing: Some(50),
+            }
+        },
+        ItemType::Sword => {
+            ItemDescriptor{
+                durability: 10,
+                damage: Some(15),
+                healing: None,
+            }
+        },
+        ItemType::Shotgun => {
+            ItemDescriptor{
+                durability: 2,
+                damage: Some(50),
+                healing: None,
+            }
+        },
+    }
+}
+
 struct Node {
     item_type: ItemType,
 }
@@ -12,34 +58,19 @@ impl Node {
         }
     }
     fn render(&self) {
-        match self.item_type{
-            ItemType::Rifle => {
-                println!("--------------------");
-                println!("       AK-47");
-                println!("--------------------");
-            },
-            ItemType::SmallMed => {
-                println!("--------------------");
-                println!("       smol med");
-                println!("--------------------");
-            },
-            ItemType::BigMed => {
-                println!("--------------------");
-                println!("       big med");
-                println!("--------------------");
-            },
-            ItemType::Sword => {
-                println!("--------------------");
-                println!("       Sowrd");
-                println!("--------------------");
-            },
-            ItemType::Shotgun => {
-                println!("--------------------");
-                println!("       shotty");
-                println!("--------------------");
-            },
-
+        let descriptor = get_item_description(&self.item_type);
+        println!("------------------------------");
+        println!("Item: {}", self.item_type.string());
+        println!("Durability: {}", descriptor.durability);
+        match descriptor.damage{
+            Some(damage) => println!("Damage: {}", damage),
+            None => println!("Damage: None"),
         }
+        match descriptor.healing{
+            Some(healing) => println!("Healing: {}", healing),
+            None => println!("Healing: None"),
+        }
+        println!("------------------------------");
     }
 }
 
