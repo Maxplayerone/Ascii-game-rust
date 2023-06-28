@@ -3,19 +3,25 @@ mod enemy;
 mod input_parser;
 mod level_parser;
 mod math;
+mod inventory;
 
 //(NOTE): how coordinate system works
 //(0, 0) top-left
-//const CHUNK_WIDTH: usize = 32;
-//we have to add one more for the newline
-//const CHUNK_WIDTH_NEWLINE: usize = CHUNK_WIDTH + 1;
-//const CHUNK_HEIGHT: usize = 30;
 
 struct GameState {
+    location_type: LocationType,
     map: Vec<char>,
     map_dimensions: math::Pos2,
     player_pos: math::Pos2,
+
     enemy_manager: enemy::EnemyManager,
+    inventory_manager: inventory::InventoryManager,
+}
+
+#[derive(PartialEq, Eq)]
+pub enum LocationType {
+    Map,
+    Inventory,
 }
 
 const ENEMY_SYMBOL: char = '@';
@@ -28,11 +34,15 @@ impl GameState {
         let player_pos = info.player;
         let map_dimensions = info.map_dimensions;
         let enemy_manager = enemy::EnemyManager::new(info.enemies);
+        let mut inventory_manager = inventory::InventoryManager::new();
+        inventory_manager.add_node();
         Self {
             map,
             player_pos,
             map_dimensions,
             enemy_manager,
+            location_type: LocationType::Map,
+            inventory_manager,
         }
     }
 
@@ -72,26 +82,30 @@ impl GameState {
         self.map[y * width_usize + x] = PLAYER_SYMBOL;
     }
 
+    fn update_location(&mut self) -> bool {
+        match self.location_type {
+            LocationType::Map => self.update_map(),
+            LocationType::Inventory => self.inventory_manager.update(),
+        }
+    }
+
     fn update_map(&mut self) -> bool {
         let (mut queue, location_changer) = input_parser::get_parsed_user_input_map();
-
-        match location_changer {
-            Some(new_location) => {
-                println!("changing to inventory");
-            }
-            None => {
-                for _ in 0..queue.size() {
-                    let command: input_parser::InputCommand = queue.pop();
-                    if command == input_parser::InputCommand::Quit {
-                        return false;
-                    } else {
-                        self.update_hero(command);
-                    }
-
-                    self.update_enemies();
-                }
-            }
+        if let Some(location_changer) = location_changer{
+            self.location_type = location_changer;
         }
+
+        for _ in 0..queue.size() {
+            let command: input_parser::InputCommand = queue.pop();
+            if command == input_parser::InputCommand::Quit {
+                return false;
+            } else {
+                self.update_hero(command);
+            }
+
+            self.update_enemies();
+        }
+
         true
     }
 
@@ -102,6 +116,13 @@ impl GameState {
         let mut index: usize;
         for i in 0..self.map_dimensions.y {
             self.map[i as usize * (width_usize + 1) + width_usize] = '\n';
+        }
+    }
+
+    fn render_location(&mut self) {
+        match self.location_type {
+            LocationType::Map => self.render_map(),
+            LocationType::Inventory => self.inventory_manager.render(),
         }
     }
 
@@ -119,7 +140,7 @@ fn main() {
     let mut state = GameState::new();
     let mut playing = true;
     while playing {
-        state.render_map();
-        playing = state.update_map();
+        state.render_location();
+        playing = state.update_location();
     }
 }

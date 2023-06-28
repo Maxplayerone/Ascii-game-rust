@@ -1,4 +1,5 @@
 use crate::data_structures;
+use crate::LocationType;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum InputCommand {
@@ -8,10 +9,6 @@ pub enum InputCommand {
     Down,
     Wait,
     Quit,
-}
-
-pub enum ChangeLocation {
-    Inventory,
 }
 
 fn read_user_input() -> String {
@@ -85,7 +82,7 @@ fn check_if_char_is_correct(char_option: Option<char>, char_to_compare: char) ->
     }
 }
 
-pub fn get_parsed_user_input_map() -> (data_structures::Queue, Option<ChangeLocation>) {
+pub fn get_parsed_user_input_map() -> (data_structures::Queue, Option<LocationType>) {
     //(NOTE) commands available in map mode
     let mut current_number = 1;
     let mut queue = data_structures::Queue::new();
@@ -331,7 +328,7 @@ pub fn get_parsed_user_input_map() -> (data_structures::Queue, Option<ChangeLoca
                 //checking if the user wants to open the inventory
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 2), 'f') {
                     if let None = check_if_char_is_correct(command.chars().nth(i + 2), 'v') {
-                        return (queue, Some(ChangeLocation::Inventory));
+                        return (queue, Some(LocationType::Inventory));
                     }
                     show_helpful_message(message);
                     return get_parsed_user_input_map();
