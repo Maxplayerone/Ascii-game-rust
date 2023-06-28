@@ -1,5 +1,4 @@
-use std::io::{self, BufRead};
-use crate::ItemType;
+use crate::{ItemType, LocationType};
 
 struct ItemDescriptor{
     durability: i32,
@@ -78,6 +77,20 @@ pub struct InventoryManager {
     nodes: Vec<Node>,
 }
 
+fn equate_chars(char_option: Option<char>, char_to_compare: char) -> bool{
+    match char_option{
+        Some(c) => {
+            if c == char_to_compare{
+                return true;
+            }
+            else{
+                return false;
+            }
+        },
+        None => false
+    }
+}
+
 impl InventoryManager {
     pub fn new() -> Self {
         Self { nodes: Vec::new() }
@@ -93,9 +106,18 @@ impl InventoryManager {
         }
     }
 
-    pub fn update(&self) -> bool {
-        let stdin = io::stdin();
-        let input = stdin.lock().lines().next().unwrap().unwrap();
+    pub fn update(&self, location_type: &mut LocationType) -> bool {
+        let mut line = String::new();
+        let _byte_size = std::io::stdin().read_line(&mut line).unwrap();
+
+        if equate_chars(line.chars().nth(0), 'm')
+            && equate_chars(line.chars().nth(1), 'a')
+            && equate_chars(line.chars().nth(2), 'p')
+            && equate_chars(line.chars().nth(3), 13 as char)
+        {
+            *location_type = LocationType::Map;
+        }          
+
         true
     }
 }

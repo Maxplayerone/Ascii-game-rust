@@ -104,7 +104,7 @@ impl GameState {
     fn update_location(&mut self) -> bool {
         match self.location_type {
             LocationType::Map => self.update_map(),
-            LocationType::Inventory => self.inventory_manager.update(),
+            LocationType::Inventory => self.inventory_manager.update(&mut self.location_type),
         }
     }
 
