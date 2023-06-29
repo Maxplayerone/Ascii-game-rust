@@ -2,7 +2,7 @@ use rand::Rng;
 
 use crate::data_structures;
 use crate::inventory;
-use crate::{LocationType, ItemType};
+use crate::{ItemType, LocationType};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum InputCommand {
@@ -85,7 +85,9 @@ fn check_if_char_is_correct(char_option: Option<char>, char_to_compare: char) ->
     }
 }
 
-pub fn get_parsed_user_input_map(inventory_manager: &mut inventory::InventoryManager) -> (data_structures::Queue, Option<LocationType>) {
+pub fn get_parsed_user_input_map(
+    inventory_manager: &mut inventory::InventoryManager,
+) -> (data_structures::Queue, Option<LocationType>) {
     //(NOTE) commands available in map mode
     let mut current_number = 1;
     let mut queue = data_structures::Queue::new();
@@ -161,18 +163,18 @@ pub fn get_parsed_user_input_map(inventory_manager: &mut inventory::InventoryMan
                                 }
                                 None => {
                                     let mut rng = rand::thread_rng();
-                                    let random_number = rng.gen_range(1..=5); 
-                                    match random_number{
+                                    let random_number = rng.gen_range(1..=5);
+                                    match random_number {
                                         1 => inventory_manager.add_node(ItemType::Rifle),
                                         2 => inventory_manager.add_node(ItemType::SmallMed),
                                         3 => inventory_manager.add_node(ItemType::BigMed),
                                         4 => inventory_manager.add_node(ItemType::Sword),
                                         5 => inventory_manager.add_node(ItemType::Shotgun),
-                                        _ => ()
+                                        _ => (),
                                     }
                                     i += 5;
                                     continue;
-                                },
+                                }
                             }
                         }
                     }

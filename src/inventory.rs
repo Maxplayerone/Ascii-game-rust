@@ -1,47 +1,37 @@
 use crate::{ItemType, LocationType};
 
-struct ItemDescriptor{
+struct ItemDescriptor {
     durability: i32,
     damage: Option<i32>,
     healing: Option<i32>,
 }
 
-fn get_item_description(item_type: &ItemType) -> ItemDescriptor{
-    match item_type{
-        ItemType::Rifle => {
-            ItemDescriptor{
-                durability: 5,
-                damage: Some(30),
-                healing: None,
-            }
+fn get_item_description(item_type: &ItemType) -> ItemDescriptor {
+    match item_type {
+        ItemType::Rifle => ItemDescriptor {
+            durability: 5,
+            damage: Some(30),
+            healing: None,
         },
-        ItemType::SmallMed => {
-            ItemDescriptor{
-                durability: 1,
-                damage: None,
-                healing: Some(20),
-            }
+        ItemType::SmallMed => ItemDescriptor {
+            durability: 1,
+            damage: None,
+            healing: Some(20),
         },
-        ItemType::BigMed => {
-            ItemDescriptor{
-                durability: 1,
-                damage: None,
-                healing: Some(50),
-            }
+        ItemType::BigMed => ItemDescriptor {
+            durability: 1,
+            damage: None,
+            healing: Some(50),
         },
-        ItemType::Sword => {
-            ItemDescriptor{
-                durability: 10,
-                damage: Some(15),
-                healing: None,
-            }
+        ItemType::Sword => ItemDescriptor {
+            durability: 10,
+            damage: Some(15),
+            healing: None,
         },
-        ItemType::Shotgun => {
-            ItemDescriptor{
-                durability: 2,
-                damage: Some(50),
-                healing: None,
-            }
+        ItemType::Shotgun => ItemDescriptor {
+            durability: 2,
+            damage: Some(50),
+            healing: None,
         },
     }
 }
@@ -52,20 +42,18 @@ struct Node {
 
 impl Node {
     fn new(item_type: ItemType) -> Self {
-        Self {
-            item_type
-        }
+        Self { item_type }
     }
     fn render(&self) {
         let descriptor = get_item_description(&self.item_type);
         println!("------------------------------");
         println!("Item: {}", self.item_type.string());
         println!("Durability: {}", descriptor.durability);
-        match descriptor.damage{
+        match descriptor.damage {
             Some(damage) => println!("Damage: {}", damage),
             None => println!("Damage: None"),
         }
-        match descriptor.healing{
+        match descriptor.healing {
             Some(healing) => println!("Healing: {}", healing),
             None => println!("Healing: None"),
         }
@@ -77,17 +65,16 @@ pub struct InventoryManager {
     nodes: Vec<Node>,
 }
 
-fn equate_chars(char_option: Option<char>, char_to_compare: char) -> bool{
-    match char_option{
+fn equate_chars(char_option: Option<char>, char_to_compare: char) -> bool {
+    match char_option {
         Some(c) => {
-            if c == char_to_compare{
+            if c == char_to_compare {
                 return true;
-            }
-            else{
+            } else {
                 return false;
             }
-        },
-        None => false
+        }
+        None => false,
     }
 }
 
@@ -116,7 +103,7 @@ impl InventoryManager {
             && equate_chars(line.chars().nth(3), 13 as char)
         {
             *location_type = LocationType::Map;
-        }          
+        }
 
         true
     }

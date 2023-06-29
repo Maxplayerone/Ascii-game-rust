@@ -4,16 +4,14 @@ mod input_parser;
 mod inventory;
 mod level_parser;
 mod math;
-
-//(NOTE): how coordinate system works
-//(0, 0) top-left
+mod player;
+mod map;
 
 struct GameState {
     location_type: LocationType,
-    map: Vec<char>,
-    map_dimensions: math::Pos2,
-    player_pos: math::Pos2,
 
+    map_manager: map::MapManager,
+    player_manager: player::PlayerManager,
     enemy_manager: enemy::EnemyManager,
     inventory_manager: inventory::InventoryManager,
 }
@@ -50,109 +48,36 @@ const GRASS_SYMBOL: char = 'x';
 
 impl GameState {
     fn new() -> Self {
-        let (map, info) = level_parser::parse_level(PLAYER_SYMBOL, ENEMY_SYMBOL);
-        let player_pos = info.player;
-        let map_dimensions = info.map_dimensions;
+        let (map_manager, info) = map::MapManager::new(PLAYER_SYMBOL, ENEMY_SYMBOL);
+        let player_manager = player::PlayerManager::new(info.player);
         let enemy_manager = enemy::EnemyManager::new(info.enemies);
         let mut inventory_manager = inventory::InventoryManager::new();
         Self {
-            map,
-            player_pos,
-            map_dimensions,
+            map_manager,
+            player_manager,
             enemy_manager,
-            location_type: LocationType::Map,
             inventory_manager,
+            location_type: LocationType::Map,
         }
-    }
-
-    fn update_enemies(&mut self) {
-        self.enemy_manager.update_enemies(&self.player_pos);
-    }
-
-    fn render_enemies(&mut self) {
-        let width_usize: usize = self.map_dimensions.x.try_into().unwrap();
-
-        for i in 0..self.enemy_manager.size() {
-            let enemy = self.enemy_manager.get_enemy(i);
-
-            let y: usize = enemy.y.try_into().unwrap();
-            let x: usize = enemy.x.try_into().unwrap();
-
-            self.map[y * width_usize + x] = ENEMY_SYMBOL;
-        }
-    }
-
-    fn update_hero(&mut self, input_command: input_parser::InputCommand) {
-        match input_command {
-            input_parser::InputCommand::Right => self.player_pos.x += 1,
-            input_parser::InputCommand::Left => self.player_pos.x -= 1,
-            input_parser::InputCommand::Up => self.player_pos.y -= 1,
-            input_parser::InputCommand::Down => self.player_pos.y += 1,
-            _ => {
-                let _ = 3;
-            }
-        }
-    }
-
-    fn render_hero(&mut self) {
-        let width_usize: usize = self.map_dimensions.x.try_into().unwrap();
-        let y: usize = self.player_pos.y.try_into().unwrap();
-        let x: usize = self.player_pos.x.try_into().unwrap();
-        self.map[y * width_usize + x] = PLAYER_SYMBOL;
     }
 
     fn update_location(&mut self) -> bool {
         match self.location_type {
-            LocationType::Map => self.update_map(),
+            LocationType::Map => self.map_manager.update(&mut self.inventory_manager, 
+                                                        &mut self.location_type,
+                                                        &mut self.enemy_manager,
+                                                        &mut self.player_manager),
             LocationType::Inventory => self.inventory_manager.update(&mut self.location_type),
-        }
-    }
-
-    fn update_map(&mut self) -> bool {
-        let (mut queue, location_changer) = input_parser::get_parsed_user_input_map(&mut self.inventory_manager);
-        if let Some(location_changer) = location_changer {
-            self.location_type = location_changer;
-        }
-
-        for _ in 0..queue.size() {
-            let command: input_parser::InputCommand = queue.pop();
-            if command == input_parser::InputCommand::Quit {
-                return false;
-            } else {
-                self.update_hero(command);
-            }
-
-            self.update_enemies();
-        }
-
-        true
-    }
-
-    fn flush_map(&mut self) {
-        self.map.iter_mut().for_each(|c| *c = 'x');
-
-        let width_usize: usize = self.map_dimensions.x.try_into().unwrap();
-        let mut index: usize;
-        for i in 0..self.map_dimensions.y {
-            self.map[i as usize * (width_usize + 1) + width_usize] = '\n';
         }
     }
 
     fn render_location(&mut self) {
         match self.location_type {
-            LocationType::Map => self.render_map(),
+            LocationType::Map => self.map_manager.render(&mut self.player_manager, &mut self.enemy_manager),
             LocationType::Inventory => self.inventory_manager.render(),
         }
     }
 
-    fn render_map(&mut self) {
-        self.flush_map();
-        self.render_hero();
-        self.render_enemies();
-
-        let map_string: String = self.map.iter().collect();
-        println!("{}", map_string);
-    }
 }
 
 fn main() {
