@@ -74,14 +74,12 @@ fn check_if_char_is_correct(char_option: Option<char>, char_to_compare: char) ->
     match char_option {
         Some(c) => {
             if c == char_to_compare {
-                return None;
+                None
             } else {
-                return Some(Message::CommandTypedIncorrectly);
+                Some(Message::CommandTypedIncorrectly)
             }
         }
-        None => {
-            return Some(Message::IncorrectCommand);
-        }
+        None => Some(Message::IncorrectCommand),
     }
 }
 
@@ -149,33 +147,31 @@ pub fn get_parsed_user_input_map(
                 }
 
                 //(NOTE): TEMPORARY CODE
-                if let None = check_if_char_is_correct(command.chars().nth(i + 2), 'f') {
-                    //go on and on with other letters
-                    if let None = check_if_char_is_correct(command.chars().nth(i + 3), 'l') {
-                        if let None = check_if_char_is_correct(command.chars().nth(i + 4), 'e') {
-                            let wrong_letter_after_command = command.chars().nth(i + 5);
-                            match wrong_letter_after_command {
-                                Some(letter) => {
-                                    if !letter.is_numeric() {
-                                        show_helpful_message(Message::CommandTypedIncorrectly);
-                                        return get_parsed_user_input_map(inventory_manager);
-                                    }
-                                }
-                                None => {
-                                    let mut rng = rand::thread_rng();
-                                    let random_number = rng.gen_range(1..=5);
-                                    match random_number {
-                                        1 => inventory_manager.add_node(ItemType::Rifle),
-                                        2 => inventory_manager.add_node(ItemType::SmallMed),
-                                        3 => inventory_manager.add_node(ItemType::BigMed),
-                                        4 => inventory_manager.add_node(ItemType::Sword),
-                                        5 => inventory_manager.add_node(ItemType::Shotgun),
-                                        _ => (),
-                                    }
-                                    i += 5;
-                                    continue;
-                                }
+                if check_if_char_is_correct(command.chars().nth(i + 2), 'f').is_none()
+                    && check_if_char_is_correct(command.chars().nth(i + 3), 'l').is_none()
+                    && check_if_char_is_correct(command.chars().nth(i + 4), 'e').is_none()
+                {
+                    let wrong_letter_after_command = command.chars().nth(i + 5);
+                    match wrong_letter_after_command {
+                        Some(letter) => {
+                            if !letter.is_numeric() {
+                                show_helpful_message(Message::CommandTypedIncorrectly);
+                                return get_parsed_user_input_map(inventory_manager);
                             }
+                        }
+                        None => {
+                            let mut rng = rand::thread_rng();
+                            let random_number = rng.gen_range(1..=5);
+                            match random_number {
+                                1 => inventory_manager.add_node(ItemType::Rifle),
+                                2 => inventory_manager.add_node(ItemType::SmallMed),
+                                3 => inventory_manager.add_node(ItemType::BigMed),
+                                4 => inventory_manager.add_node(ItemType::Sword),
+                                5 => inventory_manager.add_node(ItemType::Shotgun),
+                                _ => (),
+                            }
+                            i += 5;
+                            continue;
                         }
                     }
                 }
@@ -195,14 +191,11 @@ pub fn get_parsed_user_input_map(
 
                 //checking if the last letter is wrong
                 let wrong_letter_after_command = command.chars().nth(i + 5);
-                match wrong_letter_after_command {
-                    Some(letter) => {
-                        if !letter.is_numeric() {
-                            show_helpful_message(Message::CommandTypedIncorrectly);
-                            return get_parsed_user_input_map(inventory_manager);
-                        }
+                if let Some(letter) = wrong_letter_after_command {
+                    if !letter.is_numeric() {
+                        show_helpful_message(Message::CommandTypedIncorrectly);
+                        return get_parsed_user_input_map(inventory_manager);
                     }
-                    None => (),
                 }
 
                 for _ in 0..current_number {
@@ -227,14 +220,11 @@ pub fn get_parsed_user_input_map(
                     return get_parsed_user_input_map(inventory_manager);
                 }
                 let wrong_letter_after_command = command.chars().nth(i + 5);
-                match wrong_letter_after_command {
-                    Some(letter) => {
-                        if !letter.is_numeric() {
-                            show_helpful_message(Message::CommandTypedIncorrectly);
-                            return get_parsed_user_input_map(inventory_manager);
-                        }
+                if let Some(letter) = wrong_letter_after_command {
+                    if !letter.is_numeric() {
+                        show_helpful_message(Message::CommandTypedIncorrectly);
+                        return get_parsed_user_input_map(inventory_manager);
                     }
-                    None => (),
                 }
                 for _ in 0..current_number {
                     queue.push(InputCommand::Left);
@@ -251,14 +241,11 @@ pub fn get_parsed_user_input_map(
                 }
 
                 let wrong_letter_after_command = command.chars().nth(i + 5);
-                match wrong_letter_after_command {
-                    Some(letter) => {
-                        if !letter.is_numeric() {
-                            show_helpful_message(Message::CommandTypedIncorrectly);
-                            return get_parsed_user_input_map(inventory_manager);
-                        }
+                if let Some(letter) = wrong_letter_after_command {
+                    if !letter.is_numeric() {
+                        show_helpful_message(Message::CommandTypedIncorrectly);
+                        return get_parsed_user_input_map(inventory_manager);
                     }
-                    None => (),
                 }
                 for _ in 0..current_number {
                     queue.push(InputCommand::Up);
@@ -282,14 +269,11 @@ pub fn get_parsed_user_input_map(
                     return get_parsed_user_input_map(inventory_manager);
                 }
                 let wrong_letter_after_command = command.chars().nth(i + 5);
-                match wrong_letter_after_command {
-                    Some(letter) => {
-                        if !letter.is_numeric() {
-                            show_helpful_message(Message::CommandTypedIncorrectly);
-                            return get_parsed_user_input_map(inventory_manager);
-                        }
+                if let Some(letter) = wrong_letter_after_command {
+                    if !letter.is_numeric() {
+                        show_helpful_message(Message::CommandTypedIncorrectly);
+                        return get_parsed_user_input_map(inventory_manager);
                     }
-                    None => (),
                 }
                 for _ in 0..current_number {
                     queue.push(InputCommand::Down);
@@ -313,15 +297,13 @@ pub fn get_parsed_user_input_map(
                     return get_parsed_user_input_map(inventory_manager);
                 }
                 let wrong_letter_after_command = command.chars().nth(i + 5);
-                match wrong_letter_after_command {
-                    Some(letter) => {
-                        if !letter.is_numeric() {
-                            show_helpful_message(Message::CommandTypedIncorrectly);
-                            return get_parsed_user_input_map(inventory_manager);
-                        }
+                if let Some(letter) = wrong_letter_after_command {
+                    if !letter.is_numeric() {
+                        show_helpful_message(Message::CommandTypedIncorrectly);
+                        return get_parsed_user_input_map(inventory_manager);
                     }
-                    None => (),
                 }
+
                 for _ in 0..current_number {
                     queue.push(InputCommand::Wait);
                 }
@@ -344,14 +326,11 @@ pub fn get_parsed_user_input_map(
                     return get_parsed_user_input_map(inventory_manager);
                 }
                 let wrong_letter_after_command = command.chars().nth(i + 5);
-                match wrong_letter_after_command {
-                    Some(letter) => {
-                        if !letter.is_numeric() {
-                            show_helpful_message(Message::CommandTypedIncorrectly);
-                            return get_parsed_user_input_map(inventory_manager);
-                        }
+                if let Some(letter) = wrong_letter_after_command {
+                    if !letter.is_numeric() {
+                        show_helpful_message(Message::CommandTypedIncorrectly);
+                        return get_parsed_user_input_map(inventory_manager);
                     }
-                    None => (),
                 }
                 queue.push(InputCommand::Quit);
                 current_number = 1;
@@ -364,7 +343,7 @@ pub fn get_parsed_user_input_map(
                 }
                 //checking if the user wants to open the inventory
                 if let Some(message) = check_if_char_is_correct(command.chars().nth(i + 2), 'f') {
-                    if let None = check_if_char_is_correct(command.chars().nth(i + 2), 'v') {
+                    if check_if_char_is_correct(command.chars().nth(i + 2), 'v').is_none() {
                         return (queue, Some(LocationType::Inventory));
                     }
                     show_helpful_message(message);
@@ -376,14 +355,11 @@ pub fn get_parsed_user_input_map(
                     return get_parsed_user_input_map(inventory_manager);
                 }
                 let wrong_letter_after_command = command.chars().nth(i + 5);
-                match wrong_letter_after_command {
-                    Some(letter) => {
-                        if !letter.is_numeric() {
-                            show_helpful_message(Message::CommandTypedIncorrectly);
-                            return get_parsed_user_input_map(inventory_manager);
-                        }
+                if let Some(letter) = wrong_letter_after_command {
+                    if !letter.is_numeric() {
+                        show_helpful_message(Message::CommandTypedIncorrectly);
+                        return get_parsed_user_input_map(inventory_manager);
                     }
-                    None => (),
                 }
                 show_helpful_message(Message::GameTutorial);
                 current_number = 1;

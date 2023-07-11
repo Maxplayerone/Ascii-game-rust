@@ -23,6 +23,7 @@ impl Queue {
         self.commands[old_marker]
     }
 
+    /*
     pub fn get_number_of(&self, command: input_parser::InputCommand) -> usize {
         let mut total_num: usize = 0;
         for element in self.commands.iter() {
@@ -32,6 +33,7 @@ impl Queue {
         }
         total_num
     }
+    */
 
     pub fn size(&self) -> usize {
         self.commands.len()

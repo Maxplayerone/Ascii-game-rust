@@ -44,6 +44,7 @@ impl Node {
     fn new(item_type: ItemType) -> Self {
         Self { item_type }
     }
+
     fn render(&self) {
         let descriptor = get_item_description(&self.item_type);
         println!("------------------------------");
@@ -63,28 +64,131 @@ impl Node {
 
 pub struct InventoryManager {
     nodes: Vec<Node>,
+    searched_words: Vec<WordProgress>,
 }
 
-fn equate_chars(char_option: Option<char>, char_to_compare: char) -> bool {
-    match char_option {
-        Some(c) => {
-            if c == char_to_compare {
-                return true;
-            } else {
-                return false;
+//(NOTE): backburner of errors
+//if the wordProgress is map and the user types mapfjkdklfdajklfajsdkl it is still correct
+struct WordProgress {
+    current_word: String,
+    current_char: Option<char>,
+    current_word_index: usize,
+    word_size: usize,
+    started_word: bool,
+    freeze: bool,
+}
+
+impl WordProgress {
+    pub fn new(word: String) -> Self {
+        let current_word = word.clone();
+        let word_size = word.chars().count();
+        Self {
+            current_word,
+            current_char: None,
+            current_word_index: 0,
+            word_size,
+            started_word: false,
+            freeze: false,
+        }
+    }
+
+    fn get_char_from_index(&mut self, index: usize) -> &mut Self {
+        self.current_char = self.current_word.chars().nth(index);
+        self
+    }
+
+    fn equate_chars(&self, c: &char) -> CharacterValidation {
+        match self.current_char {
+            Some(c2) => {
+                if c2 == *c {
+                    CharacterValidation::CorrectCharacter
+                } else {
+                    CharacterValidation::IncorrectCharacter
+                }
+            }
+            None => CharacterValidation::NoCharacter,
+        }
+    }
+
+    pub fn check_char(&mut self, c: &char) -> Option<WordProgressMessage> {
+        if self.freeze {
+            return None;
+        }
+
+        match self
+            .get_char_from_index(self.current_word_index)
+            .equate_chars(c)
+        {
+            CharacterValidation::CorrectCharacter => {
+                self.current_word_index += 1;
+
+                if self.current_word_index == self.word_size {
+                    println!("Finished a word");
+                    return Some(WordProgressMessage::FinishedWord);
+                }
+
+                if !self.started_word {
+                    self.started_word = true;
+                    //println!("Started the word");
+                    return Some(WordProgressMessage::StartedWord);
+                }
+            },
+            CharacterValidation::IncorrectCharacter => {
+                println!("The word is not correct");
+                self.freeze = true;
+            },
+            CharacterValidation::NoCharacter => {
+                println!("Finished a word");
+                return Some(WordProgressMessage::FinishedWord);
             }
         }
-        None => false,
+        None
     }
+
+    fn reset(&mut self) {
+        self.current_word_index = 0;
+        self.freeze = false;
+        self.started_word = false;
+    }
+}
+
+enum CharacterValidation {
+    CorrectCharacter,
+    IncorrectCharacter,
+    NoCharacter,
+}
+
+enum WordProgressMessage {
+    StartedWord,
+    FinishedWord,
 }
 
 impl InventoryManager {
     pub fn new() -> Self {
-        Self { nodes: Vec::new() }
+        let map_progress = WordProgress::new("map".to_string());
+        /*
+        let quit_progress = WordProgress::new("quit".to_string());
+        let equip_progress = WordProgress::new("equip".to_string());
+        let drop_progress = WordProgress::new("drop".to_string());
+        */
+
+        let mut searched_words = Vec::new();
+        searched_words.push(map_progress);
+        /*
+        searched_words.push(quit_progress);
+        searched_words.push(equip_progress);
+        searched_words.push(drop_progress);
+        */
+
+        Self {
+            nodes: Vec::new(),
+            searched_words,
+        }
     }
 
     pub fn add_node(&mut self, item_type: ItemType) {
         self.nodes.push(Node::new(item_type));
+        //self.searched_words.push(WordProgress::new(self.nodes.len().to_string()));
     }
 
     pub fn render(&mut self) {
@@ -93,16 +197,30 @@ impl InventoryManager {
         }
     }
 
-    pub fn update(&self, location_type: &mut LocationType) -> bool {
+    pub fn update(&mut self, location_type: &mut LocationType) -> bool {
         let mut line = String::new();
         let _byte_size = std::io::stdin().read_line(&mut line).unwrap();
+        let command: String = line.chars().filter(|c| !c.is_whitespace()).collect();
 
-        if equate_chars(line.chars().nth(0), 'm')
+        //when adding helpful messages try to use iterator patterns
+        /*
+        if equate_chars(line.chars().next(), 'm')
             && equate_chars(line.chars().nth(1), 'a')
             && equate_chars(line.chars().nth(2), 'p')
             && equate_chars(line.chars().nth(3), 13 as char)
         {
             *location_type = LocationType::Map;
+        }
+        */
+
+        for c in command.chars() {
+            for searched_word in self.searched_words.iter_mut() {
+                searched_word.check_char(&c);
+            }
+        }
+
+        for searched_word in self.searched_words.iter_mut() {
+            searched_word.reset();
         }
 
         true

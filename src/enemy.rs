@@ -15,7 +15,7 @@ impl EnemyManager {
     }
 
     pub fn update(&mut self, player_pos: &math::Pos2) {
-        for (index, enemy) in self.enemies.iter_mut().enumerate() {
+        for enemy in self.enemies.iter_mut() {
             let pos = find_closest_position_to_player(enemy, player_pos);
             *enemy = *enemy + pos;
         }
@@ -25,7 +25,7 @@ impl EnemyManager {
         &self.enemies[index]
     }
 
-    pub fn get_enemy_position(&self, index: usize) -> (usize, usize){
+    pub fn get_enemy_position(&self, index: usize) -> (usize, usize) {
         let enemy: &math::Pos2 = self.get_enemy(index);
         let x: usize = enemy.x.try_into().unwrap();
         let y: usize = enemy.y.try_into().unwrap();

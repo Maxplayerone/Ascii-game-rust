@@ -3,9 +3,9 @@ mod enemy;
 mod input_parser;
 mod inventory;
 mod level_parser;
+mod map;
 mod math;
 mod player;
-mod map;
 
 struct GameState {
     location_type: LocationType,
@@ -22,7 +22,7 @@ pub enum LocationType {
     Inventory,
 }
 
-pub enum ItemType{
+pub enum ItemType {
     Rifle,
     SmallMed,
     BigMed,
@@ -30,9 +30,9 @@ pub enum ItemType{
     Shotgun,
 }
 
-impl ItemType{
-    pub fn string(&self) -> &str{
-        match self{
+impl ItemType {
+    pub fn string(&self) -> &str {
+        match self {
             ItemType::Rifle => "Rifle",
             ItemType::SmallMed => "Small med",
             ItemType::BigMed => "Big med",
@@ -48,10 +48,10 @@ const GRASS_SYMBOL: char = 'x';
 
 impl GameState {
     fn new() -> Self {
-        let (map_manager, info) = map::MapManager::new(PLAYER_SYMBOL, ENEMY_SYMBOL);
+        let (map_manager, info) = map::MapManager::new(PLAYER_SYMBOL, ENEMY_SYMBOL, GRASS_SYMBOL);
         let player_manager = player::PlayerManager::new(info.player);
         let enemy_manager = enemy::EnemyManager::new(info.enemies);
-        let mut inventory_manager = inventory::InventoryManager::new();
+        let inventory_manager = inventory::InventoryManager::new();
         Self {
             map_manager,
             player_manager,
@@ -63,21 +63,24 @@ impl GameState {
 
     fn update_location(&mut self) -> bool {
         match self.location_type {
-            LocationType::Map => self.map_manager.update(&mut self.inventory_manager, 
-                                                        &mut self.location_type,
-                                                        &mut self.enemy_manager,
-                                                        &mut self.player_manager),
+            LocationType::Map => self.map_manager.update(
+                &mut self.inventory_manager,
+                &mut self.location_type,
+                &mut self.enemy_manager,
+                &mut self.player_manager,
+            ),
             LocationType::Inventory => self.inventory_manager.update(&mut self.location_type),
         }
     }
 
     fn render_location(&mut self) {
         match self.location_type {
-            LocationType::Map => self.map_manager.render(&mut self.player_manager, &mut self.enemy_manager),
+            LocationType::Map => self
+                .map_manager
+                .render(&mut self.player_manager, &mut self.enemy_manager),
             LocationType::Inventory => self.inventory_manager.render(),
         }
     }
-
 }
 
 fn main() {
