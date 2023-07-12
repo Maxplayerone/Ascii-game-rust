@@ -67,10 +67,10 @@ pub struct InventoryManager {
     searched_words: Vec<WordProgress>,
 }
 
-//(NOTE): backburner of errors
-//if the wordProgress is map and the user types mapfjkdklfdajklfajsdkl it is still correct
+//(NOTE): if we have two words with the same prefix (eg. map and maple) the shorter word will win
+//for example with command maple the map will register and not the maple
 struct WordProgress {
-    current_word: String,
+    word: String,
     current_char: Option<char>,
     current_word_index: usize,
     word_size: usize,
@@ -80,10 +80,10 @@ struct WordProgress {
 
 impl WordProgress {
     pub fn new(word: String) -> Self {
-        let current_word = word.clone();
+        let word = word.clone();
         let word_size = word.chars().count();
         Self {
-            current_word,
+            word,
             current_char: None,
             current_word_index: 0,
             word_size,
@@ -93,8 +93,12 @@ impl WordProgress {
     }
 
     fn get_char_from_index(&mut self, index: usize) -> &mut Self {
-        self.current_char = self.current_word.chars().nth(index);
+        self.current_char = self.word.chars().nth(index);
         self
+    }
+
+    fn get_char_from_index_bool(&mut self, index: usize) -> bool{
+        self.word.chars().nth(index).is_some()
     }
 
     fn equate_chars(&self, c: &char) -> CharacterValidation {
@@ -123,22 +127,22 @@ impl WordProgress {
                 self.current_word_index += 1;
 
                 if self.current_word_index == self.word_size {
-                    println!("Finished a word");
+                    println!("Finished the word {}", self.word);
                     return Some(WordProgressMessage::FinishedWord);
                 }
 
                 if !self.started_word {
                     self.started_word = true;
-                    //println!("Started the word");
+                    println!("Started the word {}", self.word);
                     return Some(WordProgressMessage::StartedWord);
                 }
-            },
+            }
             CharacterValidation::IncorrectCharacter => {
-                println!("The word is not correct");
+                println!("The word {} is not correct", self.word);
                 self.freeze = true;
-            },
+            }
             CharacterValidation::NoCharacter => {
-                println!("Finished a word");
+                println!("Finished a word ({})", self.word);
                 return Some(WordProgressMessage::FinishedWord);
             }
         }
@@ -158,6 +162,7 @@ enum CharacterValidation {
     NoCharacter,
 }
 
+#[derive(PartialEq)]
 enum WordProgressMessage {
     StartedWord,
     FinishedWord,
@@ -166,17 +171,21 @@ enum WordProgressMessage {
 impl InventoryManager {
     pub fn new() -> Self {
         let map_progress = WordProgress::new("map".to_string());
-        /*
         let quit_progress = WordProgress::new("quit".to_string());
         let equip_progress = WordProgress::new("equip".to_string());
+        let info_progress = WordProgress::new("info".to_string());
+        let inv_progress = WordProgress::new("inv".to_string());
+        /*
         let drop_progress = WordProgress::new("drop".to_string());
         */
 
         let mut searched_words = Vec::new();
         searched_words.push(map_progress);
-        /*
         searched_words.push(quit_progress);
         searched_words.push(equip_progress);
+        searched_words.push(info_progress);
+        searched_words.push(inv_progress);
+        /*
         searched_words.push(drop_progress);
         */
 
@@ -214,13 +223,20 @@ impl InventoryManager {
         */
 
         for c in command.chars() {
+            let mut msg: Option<WordProgressMessage> = None;
             for searched_word in self.searched_words.iter_mut() {
-                searched_word.check_char(&c);
-            }
-        }
+                let return_val = searched_word.check_char(&c);
 
-        for searched_word in self.searched_words.iter_mut() {
-            searched_word.reset();
+                if return_val.is_some(){
+                    msg = return_val;
+                }
+            }
+
+            if msg == Some(WordProgressMessage::FinishedWord) {
+                for searched_word in self.searched_words.iter_mut() {
+                        searched_word.reset();
+                }
+            }
         }
 
         true
