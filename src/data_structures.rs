@@ -3,8 +3,7 @@ pub struct Queue<T> {
     marker: usize, //points to the first element in the queue
 }
 
-impl<T:Copy> Queue<T>
-    {
+impl<T: Copy> Queue<T> {
     pub fn new() -> Self {
         Self {
             commands: Vec::new(),
