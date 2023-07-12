@@ -5,6 +5,7 @@ mod inventory;
 mod level_parser;
 mod map;
 mod math;
+mod parser;
 mod player;
 
 struct GameState {
