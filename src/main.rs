@@ -51,7 +51,7 @@ impl GameState {
         let (map_manager, info) = map::MapManager::new(PLAYER_SYMBOL, ENEMY_SYMBOL, GRASS_SYMBOL);
         let player_manager = player::PlayerManager::new(info.player);
         let enemy_manager = enemy::EnemyManager::new(info.enemies);
-        let inventory_manager = inventory::InventoryManager::new();
+        let inventory_manager = inventory::InventoryManager::new(true);
         Self {
             map_manager,
             player_manager,

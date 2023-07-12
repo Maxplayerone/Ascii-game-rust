@@ -1,11 +1,10 @@
-use crate::input_parser;
-
-pub struct Queue {
-    commands: Vec<input_parser::InputCommand>,
+pub struct Queue<T> {
+    commands: Vec<T>,
     marker: usize, //points to the first element in the queue
 }
 
-impl Queue {
+impl<T:Copy> Queue<T>
+    {
     pub fn new() -> Self {
         Self {
             commands: Vec::new(),
@@ -13,11 +12,11 @@ impl Queue {
         }
     }
 
-    pub fn push(&mut self, command: input_parser::InputCommand) {
+    pub fn push(&mut self, command: T) {
         self.commands.push(command);
     }
 
-    pub fn pop(&mut self) -> input_parser::InputCommand {
+    pub fn pop(&mut self) -> T {
         let old_marker = self.marker;
         self.marker += 1;
         self.commands[old_marker]

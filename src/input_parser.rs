@@ -85,7 +85,7 @@ fn check_if_char_is_correct(char_option: Option<char>, char_to_compare: char) ->
 
 pub fn get_parsed_user_input_map(
     inventory_manager: &mut inventory::InventoryManager,
-) -> (data_structures::Queue, Option<LocationType>) {
+) -> (data_structures::Queue<InputCommand>, Option<LocationType>) {
     //(NOTE) commands available in map mode
     let mut current_number = 1;
     let mut queue = data_structures::Queue::new();

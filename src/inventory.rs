@@ -1,4 +1,5 @@
 use crate::{ItemType, LocationType};
+use crate::data_structures;
 
 struct ItemDescriptor {
     durability: i32,
@@ -62,10 +63,6 @@ impl Node {
     }
 }
 
-pub struct InventoryManager {
-    nodes: Vec<Node>,
-    searched_words: Vec<WordProgress>,
-}
 
 //(NOTE): if we have two words with the same prefix (eg. map and maple) the shorter word will win
 //for example with command maple the map will register and not the maple
@@ -76,11 +73,12 @@ struct WordProgress {
     word_size: usize,
     started_word: bool,
     freeze: bool,
+    return_type: InvCommand,
 }
 
 impl WordProgress {
-    pub fn new(word: String) -> Self {
-        let word = word.clone();
+    pub fn new(word: String, return_type: InvCommand) -> Self {
+        let word = word;
         let word_size = word.chars().count();
         Self {
             word,
@@ -89,16 +87,13 @@ impl WordProgress {
             word_size,
             started_word: false,
             freeze: false,
+            return_type
         }
     }
 
     fn get_char_from_index(&mut self, index: usize) -> &mut Self {
         self.current_char = self.word.chars().nth(index);
         self
-    }
-
-    fn get_char_from_index_bool(&mut self, index: usize) -> bool{
-        self.word.chars().nth(index).is_some()
     }
 
     fn equate_chars(&self, c: &char) -> CharacterValidation {
@@ -127,22 +122,22 @@ impl WordProgress {
                 self.current_word_index += 1;
 
                 if self.current_word_index == self.word_size {
-                    println!("Finished the word {}", self.word);
+                    //println!("Finished the word {}", self.word);
                     return Some(WordProgressMessage::FinishedWord);
                 }
 
                 if !self.started_word {
                     self.started_word = true;
-                    println!("Started the word {}", self.word);
+                    //println!("Started the word {}", self.word);
                     return Some(WordProgressMessage::StartedWord);
                 }
             }
             CharacterValidation::IncorrectCharacter => {
-                println!("The word {} is not correct", self.word);
+                //println!("The word {} is not correct", self.word);
                 self.freeze = true;
             }
             CharacterValidation::NoCharacter => {
-                println!("Finished a word ({})", self.word);
+                //println!("Finished a word ({})", self.word);
                 return Some(WordProgressMessage::FinishedWord);
             }
         }
@@ -153,6 +148,10 @@ impl WordProgress {
         self.current_word_index = 0;
         self.freeze = false;
         self.started_word = false;
+    }
+
+    fn get_return_type(&self) -> InvCommand{
+        self.return_type
     }
 }
 
@@ -168,39 +167,49 @@ enum WordProgressMessage {
     FinishedWord,
 }
 
+#[derive(PartialEq, Copy, Clone)]
+enum InvCommand{
+    Map,
+    Quit,
+    Equip,
+    Drop,
+}
+
+pub struct InventoryManager {
+    nodes: Vec<Node>,
+    searched_words: Vec<WordProgress>,
+    disable_node_rendering_flag: bool,
+}
+
 impl InventoryManager {
-    pub fn new() -> Self {
-        let map_progress = WordProgress::new("map".to_string());
-        let quit_progress = WordProgress::new("quit".to_string());
-        let equip_progress = WordProgress::new("equip".to_string());
-        let info_progress = WordProgress::new("info".to_string());
-        let inv_progress = WordProgress::new("inv".to_string());
-        /*
-        let drop_progress = WordProgress::new("drop".to_string());
-        */
+    pub fn new(disable_node_rendering_flag: bool) -> Self {
+        let map_progress = WordProgress::new("map".to_string(), InvCommand::Map);
+        let quit_progress = WordProgress::new("quit".to_string(), InvCommand::Quit);
+        let equip_progress = WordProgress::new("equip".to_string(), InvCommand::Equip);
+        let drop_progress = WordProgress::new("drop".to_string(), InvCommand::Drop);
 
         let mut searched_words = Vec::new();
         searched_words.push(map_progress);
         searched_words.push(quit_progress);
         searched_words.push(equip_progress);
-        searched_words.push(info_progress);
-        searched_words.push(inv_progress);
-        /*
         searched_words.push(drop_progress);
-        */
 
         Self {
             nodes: Vec::new(),
             searched_words,
+            disable_node_rendering_flag
         }
     }
 
     pub fn add_node(&mut self, item_type: ItemType) {
         self.nodes.push(Node::new(item_type));
-        //self.searched_words.push(WordProgress::new(self.nodes.len().to_string()));
+        self.searched_words.push(WordProgress::new(self.nodes.len().to_string(), InvCommand::Map));
     }
 
     pub fn render(&mut self) {
+        if self.disable_node_rendering_flag{
+            return;
+        }
         for node in self.nodes.iter() {
             node.render();
         }
@@ -210,6 +219,7 @@ impl InventoryManager {
         let mut line = String::new();
         let _byte_size = std::io::stdin().read_line(&mut line).unwrap();
         let command: String = line.chars().filter(|c| !c.is_whitespace()).collect();
+        let mut queue: data_structures::Queue<InvCommand> = data_structures::Queue::new();
 
         //when adding helpful messages try to use iterator patterns
         /*
@@ -227,7 +237,9 @@ impl InventoryManager {
             for searched_word in self.searched_words.iter_mut() {
                 let return_val = searched_word.check_char(&c);
 
-                if return_val.is_some(){
+                if return_val == Some(WordProgressMessage::FinishedWord){
+                    //push return values to a queue
+                    queue.push(searched_word.get_return_type());
                     msg = return_val;
                 }
             }
@@ -239,6 +251,16 @@ impl InventoryManager {
             }
         }
 
+        for _ in 0..queue.size(){
+            let command = queue.pop();
+            match command{
+                InvCommand::Map => println!("Going to map"),
+                InvCommand::Quit => println!("Quitting"),
+                InvCommand::Drop => println!("Dropping"),
+                InvCommand::Equip => println!("Equppin"),
+                _ => (),
+            }
+        }
         true
     }
 }
