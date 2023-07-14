@@ -1,7 +1,7 @@
 use crate::data_structures;
 use crate::parser;
-use crate::LocationType;
 use crate::weapons;
+use crate::LocationType;
 
 struct ItemDescriptor {
     durability: i32,

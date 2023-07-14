@@ -1,7 +1,9 @@
+
 use crate::data_structures;
 //(NOTE): limitations:
 //-you can't have two words which has the same beginning (for example map and maple) because map will always register first
 //-you can't even have two words with the same starting letter
+//-you can't have mutliple digit numbers
 
 pub struct ParserManager<T> {
     searched_words: Vec<WordProgress<T>>,
@@ -242,4 +244,3 @@ fn show_helpful_message(message: HelpfulMessage) {
         _ => (),
     }
 }
-

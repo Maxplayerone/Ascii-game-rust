@@ -1,4 +1,4 @@
-use crate::{data_structures, enemy, inventory, math, parser, player, LocationType, level_parser};
+use crate::{data_structures, enemy, inventory, level_parser, math, parser, player, LocationType};
 
 pub struct MapManager {
     map: Vec<char>,
@@ -24,6 +24,7 @@ pub enum MapCommand {
     Quit,
     Inv,
     Info,
+    MoveCount(usize),
 }
 
 impl MapManager {
@@ -51,6 +52,12 @@ impl MapManager {
         searched_words.push(quit);
         searched_words.push(inv);
         searched_words.push(info);
+        for i in 0..10 {
+            searched_words.push(parser::WordProgress::new(
+                i.to_string(),
+                MapCommand::MoveCount(i),
+            ));
+        }
 
         let parser = parser::ParserManager::<MapCommand>::new(searched_words);
         Self {
@@ -67,6 +74,7 @@ impl MapManager {
     // (NOTE) we have inventory_manager in the arguments because we give it the items via input_parser
     pub fn update(&mut self, location_type: &mut LocationType) -> bool {
         let queue: Option<data_structures::Queue<MapCommand>> = self.parser.parse();
+        let mut move_multiplier = 1;
         match queue {
             Some(mut queue) => {
                 for _ in 0..queue.size() {
@@ -79,12 +87,24 @@ impl MapManager {
                         MapCommand::Info => {
                             println!("showing the tutorial...");
                         }
-                        MapCommand::Left|MapCommand::Right|MapCommand::Up|MapCommand::Down => {
-                            self.player_manager.update(command);
-                            self.enemy_manager.update(&self.player_manager.pos);
+                        MapCommand::Left
+                        | MapCommand::Right
+                        | MapCommand::Up
+                        | MapCommand::Down => {
+                            for _ in 0..move_multiplier{
+                                self.player_manager.update(command);
+                                self.enemy_manager.update(&self.player_manager.pos);
+                            }
+                            move_multiplier = 1;
                         }
-                        MapCommand::Wait =>{
-                            self.enemy_manager.update(&self.player_manager.pos);
+                        MapCommand::Wait => {
+                            for _ in 0..move_multiplier{
+                                self.enemy_manager.update(&self.player_manager.pos);
+                            }
+                            move_multiplier = 1;
+                        }
+                        MapCommand::MoveCount(count) => {
+                            move_multiplier = count;
                         }
                         MapCommand::Quit => {
                             return false;
@@ -123,7 +143,7 @@ impl MapManager {
         }
     }
 
-    pub fn render(&mut self){
+    pub fn render(&mut self) {
         //flusing the map from the last game tick
         self.flush();
         //rendering player
