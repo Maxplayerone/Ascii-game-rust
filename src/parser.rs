@@ -1,4 +1,3 @@
-
 use crate::data_structures;
 //(NOTE): limitations:
 //-you can't have two words which has the same beginning (for example map and maple) because map will always register first
@@ -11,9 +10,7 @@ pub struct ParserManager<T> {
 
 impl<T: Copy> ParserManager<T> {
     pub fn new(searched_words: Vec<WordProgress<T>>) -> Self {
-        Self {
-            searched_words,
-        }
+        Self { searched_words }
     }
 
     pub fn add_word(&mut self, word: WordProgress<T>) {
@@ -28,7 +25,6 @@ impl<T: Copy> ParserManager<T> {
         let mut queue: data_structures::Queue<T> = data_structures::Queue::new();
 
         for c in command.chars() {
-
             let mut msg: Option<WordProgressFeedback> = None;
             for searched_word in self.searched_words.iter_mut() {
                 let return_val = searched_word.check_char(&c);
@@ -54,23 +50,22 @@ impl<T: Copy> ParserManager<T> {
                     searched_word.reset();
                 }
             }
-            
         }
         let mut freezed_count = 0;
         let mut count = 0;
-        for searched_word in self.searched_words.iter(){
+        for searched_word in self.searched_words.iter() {
             count += 1;
-            if searched_word.freeze{
+            if searched_word.freeze {
                 freezed_count += 1;
             }
 
-            if searched_word.active{
+            if searched_word.active {
                 show_helpful_message(HelpfulMessage::CommandTypedIncorrectly);
                 self.reset();
                 return None;
             }
         }
-        if freezed_count == count{
+        if freezed_count == count {
             show_helpful_message(HelpfulMessage::IncorrectCommand);
             self.reset();
             return None;
@@ -79,7 +74,7 @@ impl<T: Copy> ParserManager<T> {
         Some(queue)
     }
 
-    pub fn reset(&mut self){
+    pub fn reset(&mut self) {
         for searched_word in self.searched_words.iter_mut() {
             searched_word.reset();
         }
@@ -95,7 +90,7 @@ enum HelpfulMessage {
 }
 
 #[derive(PartialEq)]
-enum WordProgressFeedback{
+enum WordProgressFeedback {
     FinishedWord,
     IncorrectCommand,
 }
@@ -177,7 +172,7 @@ impl<T: Copy> WordProgress<T> {
                 }
             }
             CharacterValidation::IncorrectCharacter => {
-                if self.active{
+                if self.active {
                     return Some(WordProgressFeedback::IncorrectCommand);
                 }
                 //println!("Incorrect on char {}", c);

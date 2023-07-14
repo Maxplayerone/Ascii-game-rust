@@ -1,12 +1,13 @@
 use std::fs::File;
 use std::io::{self, BufRead};
 
-use crate::math;
+use crate::{math, chest, weapons};
 
 pub struct ParserInfo {
     pub player: math::Pos2,
     pub map_dimensions: math::Pos2,
     pub enemies: Vec<math::Pos2>,
+    pub chests: Vec<chest::Chest>,
 }
 
 impl ParserInfo {
@@ -15,11 +16,16 @@ impl ParserInfo {
             player: math::Pos2::new(0, 0),
             map_dimensions: math::Pos2::new(0, 0),
             enemies: Vec::new(),
+            chests: Vec::new(),
         }
     }
 }
 
-pub fn parse_level(player_symbol: char, enemy_symbol: char) -> (Vec<char>, ParserInfo) {
+pub fn parse_level(
+    player_symbol: char,
+    enemy_symbol: char,
+    chest_symbol: char,
+) -> (Vec<char>, ParserInfo) {
     // Open the file in read-only mode
     let file = File::open("src/level_one.sag").unwrap();
 
@@ -54,6 +60,10 @@ pub fn parse_level(player_symbol: char, enemy_symbol: char) -> (Vec<char>, Parse
                 let x: i32 = i % map_width;
                 let y: i32 = i / map_width;
                 info.enemies.push(math::Pos2::new(x, y));
+            } else if c == chest_symbol {
+                let x: i32 = i % map_width;
+                let y: i32 = i / map_width;
+                info.chests.push(chest::Chest::new(math::Pos2::new(x, y), weapons::ItemType::Rifle));
             }
             map.push(c);
             i += 1;

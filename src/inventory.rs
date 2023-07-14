@@ -2,42 +2,7 @@ use crate::data_structures;
 use crate::parser;
 use crate::weapons;
 use crate::LocationType;
-
-struct ItemDescriptor {
-    durability: i32,
-    damage: Option<i32>,
-    healing: Option<i32>,
-}
-
-fn get_item_description(item_type: &weapons::ItemType) -> ItemDescriptor {
-    match item_type {
-        weapons::ItemType::Rifle => ItemDescriptor {
-            durability: 5,
-            damage: Some(30),
-            healing: None,
-        },
-        weapons::ItemType::SmallMed => ItemDescriptor {
-            durability: 1,
-            damage: None,
-            healing: Some(20),
-        },
-        weapons::ItemType::BigMed => ItemDescriptor {
-            durability: 1,
-            damage: None,
-            healing: Some(50),
-        },
-        weapons::ItemType::Sword => ItemDescriptor {
-            durability: 10,
-            damage: Some(15),
-            healing: None,
-        },
-        weapons::ItemType::Shotgun => ItemDescriptor {
-            durability: 2,
-            damage: Some(50),
-            healing: None,
-        },
-    }
-}
+use crate::player;
 
 struct Node {
     item_type: weapons::ItemType,
@@ -49,18 +14,22 @@ impl Node {
     }
 
     fn render(&self) {
-        let descriptor = get_item_description(&self.item_type);
+        let descriptor = self.item_type.get_desc();
+
         println!("------------------------------");
         println!("Item: {}", self.item_type.string());
         println!("Durability: {}", descriptor.durability);
+
         match descriptor.damage {
             Some(damage) => println!("Damage: {}", damage),
             None => println!("Damage: None"),
         }
+
         match descriptor.healing {
             Some(healing) => println!("Healing: {}", healing),
             None => println!("Healing: None"),
         }
+
         println!("------------------------------");
     }
 }
@@ -77,12 +46,15 @@ enum InvCommand {
 
 pub struct InventoryManager {
     nodes: Vec<Node>,
-    disable_node_rendering_flag: bool,
+    node_rendering_flag: DisableNodeRendering,
     parser: parser::ParserManager<InvCommand>,
 }
 
+#[derive(PartialEq)]
+pub struct DisableNodeRendering(pub bool);
+
 impl InventoryManager {
-    pub fn new(disable_node_rendering_flag: bool) -> Self {
+    pub fn new(node_rendering_flag: DisableNodeRendering) -> Self {
         let map_progress = parser::WordProgress::new("map".to_string(), InvCommand::Map);
         let quit_progress = parser::WordProgress::new("quit".to_string(), InvCommand::Quit);
         let equip_progress = parser::WordProgress::new("equip".to_string(), InvCommand::Equip);
@@ -98,7 +70,7 @@ impl InventoryManager {
         let parser = parser::ParserManager::<InvCommand>::new(searched_words);
 
         Self {
-            disable_node_rendering_flag,
+            node_rendering_flag,
             nodes: Vec::new(),
             parser,
         }
@@ -115,16 +87,24 @@ impl InventoryManager {
         ));
     }
 
-    pub fn render(&mut self) {
-        if self.disable_node_rendering_flag {
+    pub fn render(&mut self, player: &mut player::PlayerManager) {
+        if self.node_rendering_flag == DisableNodeRendering(true) {
             return;
         }
+
+        if player.get_new_item_bool(){
+            println!("hello");
+            self.add_node(player.get_most_recent_item());
+        }
+        //println!("size {}", self.nodes.len());
         for node in self.nodes.iter() {
             node.render();
         }
     }
 
     pub fn update(&mut self, location_type: &mut LocationType) -> bool {
+        //adding new items 
+                
         let queue: Option<data_structures::Queue<InvCommand>> = self.parser.parse();
 
         match queue {
