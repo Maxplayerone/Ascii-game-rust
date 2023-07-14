@@ -4,7 +4,6 @@ pub struct ItemDescriptor {
     pub healing: Option<i32>,
 }
 
-
 #[derive(Copy, Clone)]
 pub enum ItemType {
     Rifle,
@@ -55,4 +54,3 @@ impl ItemType {
         }
     }
 }
-

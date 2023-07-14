@@ -4,11 +4,19 @@ pub struct PlayerManager {
     pub pos: math::Pos2,
     items: Vec<weapons::ItemType>,
     new_item: bool,
+    health: usize,
+    name: String,
 }
 
 impl PlayerManager {
-    pub fn new(pos: math::Pos2) -> Self {
-        Self { pos, items: Vec::new(), new_item: false}
+    pub fn new(pos: math::Pos2, name: String, health: usize) -> Self {
+        Self {
+            pos,
+            items: Vec::new(),
+            new_item: false,
+            name,
+            health,
+        }
     }
 
     pub fn update(&mut self, input_command: map::MapCommand) {
@@ -27,20 +35,32 @@ impl PlayerManager {
         (x, y)
     }
 
-    pub fn add_item(&mut self, item: weapons::ItemType){
+    pub fn add_item(&mut self, item: weapons::ItemType) {
         self.items.push(item);
     }
 
-    pub fn get_most_recent_item(&mut self) -> weapons::ItemType{
+    pub fn get_most_recent_item(&mut self) -> weapons::ItemType {
         self.set_new_item_bool(false);
         self.items[self.items.len() - 1]
     }
 
-    pub fn set_new_item_bool(&mut self, thing: bool){
+    pub fn set_new_item_bool(&mut self, thing: bool) {
         self.new_item = thing;
     }
 
-    pub fn get_new_item_bool(&self) -> bool{
+    pub fn get_new_item_bool(&self) -> bool {
         self.new_item
+    }
+
+    pub fn get_name(&self) -> String {
+        self.name.clone()
+    }
+
+    pub fn get_health(&self) -> usize {
+        self.health
+    }
+
+    pub fn get_item_count(&self) -> usize {
+        self.items.len()
     }
 }

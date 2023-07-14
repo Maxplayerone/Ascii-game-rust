@@ -1,4 +1,6 @@
-use crate::{data_structures, enemy, inventory, level_parser, math, parser, player, LocationType, chest};
+use crate::{
+    chest, data_structures, enemy, inventory, level_parser, math, parser, player, LocationType,
+};
 
 const ENEMY_SYMBOL: char = '@';
 const PLAYER_SYMBOL: char = '0';
@@ -105,7 +107,7 @@ impl MapManager {
                                     if are_colliding(&self.chests[i].pos, &player.pos) {
                                         player.add_item(*self.chests[i].get_item());
                                         player.set_new_item_bool(true);
-                                        //we're moving the value from chests cuz we're deleting 
+                                        //we're moving the value from chests cuz we're deleting
                                         //the chest thingy down there
                                         if size > 1 {
                                             self.chests[size - 1] = self.chests[i];

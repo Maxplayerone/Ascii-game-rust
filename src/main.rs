@@ -1,3 +1,4 @@
+mod chest;
 mod data_structures;
 mod enemy;
 mod inventory;
@@ -7,7 +8,6 @@ mod math;
 mod parser;
 mod player;
 mod weapons;
-mod chest;
 
 struct GameState {
     location_type: LocationType,
@@ -24,10 +24,11 @@ pub enum LocationType {
 }
 
 impl GameState {
-    fn new() -> Self {
+    fn new(name: String) -> Self {
         let (map_manager, player_pos) = map::MapManager::new();
-        let inventory_manager = inventory::InventoryManager::new(inventory::DisableNodeRendering(false));
-        let player_manager = player::PlayerManager::new(player_pos);
+        let inventory_manager =
+            inventory::InventoryManager::new(inventory::DisableNodeRendering(false));
+        let player_manager = player::PlayerManager::new(player_pos, name, 100);
         Self {
             map_manager,
             inventory_manager,
@@ -54,7 +55,11 @@ impl GameState {
 }
 
 fn main() {
-    let mut state = GameState::new();
+    println!("What's your name: ");
+    let mut name = String::new();
+    let _byte_size = std::io::stdin().read_line(&mut name).unwrap();
+
+    let mut state = GameState::new(name);
     let mut playing = true;
     while playing {
         state.render_location();

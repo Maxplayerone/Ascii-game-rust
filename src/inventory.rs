@@ -1,8 +1,8 @@
 use crate::data_structures;
 use crate::parser;
+use crate::player;
 use crate::weapons;
 use crate::LocationType;
-use crate::player;
 
 struct Node {
     item_type: weapons::ItemType,
@@ -32,6 +32,16 @@ impl Node {
 
         println!("------------------------------");
     }
+}
+
+fn render_player_stats(player: &player::PlayerManager) {
+    println!("-------------------------");
+    println!("           *      *");
+    println!("           --------");
+    println!("Name: {}", player.get_name());
+    println!("Health: {}", player.get_health());
+    println!("Item count: {}", player.get_item_count());
+    println!("-------------------------\n");
 }
 
 #[derive(PartialEq, Copy, Clone)]
@@ -92,19 +102,20 @@ impl InventoryManager {
             return;
         }
 
-        if player.get_new_item_bool(){
+        if player.get_new_item_bool() {
             println!("hello");
             self.add_node(player.get_most_recent_item());
         }
         //println!("size {}", self.nodes.len());
+        render_player_stats(&player);
         for node in self.nodes.iter() {
             node.render();
         }
     }
 
     pub fn update(&mut self, location_type: &mut LocationType) -> bool {
-        //adding new items 
-                
+        //adding new items
+
         let queue: Option<data_structures::Queue<InvCommand>> = self.parser.parse();
 
         match queue {

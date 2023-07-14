@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io::{self, BufRead};
 
-use crate::{math, chest, weapons};
+use crate::{chest, math, weapons};
 
 pub struct ParserInfo {
     pub player: math::Pos2,
@@ -63,7 +63,10 @@ pub fn parse_level(
             } else if c == chest_symbol {
                 let x: i32 = i % map_width;
                 let y: i32 = i / map_width;
-                info.chests.push(chest::Chest::new(math::Pos2::new(x, y), weapons::ItemType::Rifle));
+                info.chests.push(chest::Chest::new(
+                    math::Pos2::new(x, y),
+                    weapons::ItemType::Rifle,
+                ));
             }
             map.push(c);
             i += 1;
