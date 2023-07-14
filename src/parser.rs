@@ -1,129 +1,114 @@
 use crate::data_structures;
+//(NOTE): limitations:
+//-you can't have two words which has the same beginning (for example map and maple) because map will always register first
+//-you can't even have two words with the same starting letter
 
-pub struct ParserManager<T>{
+pub struct ParserManager<T> {
     searched_words: Vec<WordProgress<T>>,
-    active_words: usize,
-    freezed_words: usize,
 }
 
-impl<T:Copy> ParserManager<T>{
-    pub fn new(searched_words: Vec<WordProgress<T>>) -> Self{
-        Self{
+impl<T: Copy> ParserManager<T> {
+    pub fn new(searched_words: Vec<WordProgress<T>>) -> Self {
+        Self {
             searched_words,
-            active_words: 0,
-            freezed_words: 0,
         }
     }
-    
-    pub fn add_word(&mut self, word: WordProgress<T>){
+
+    pub fn add_word(&mut self, word: WordProgress<T>) {
         self.searched_words.push(word);
     }
-    
-    pub fn parse(&mut self, command: String) -> Option<data_structures::Queue<T>>{
+
+    pub fn parse(&mut self) -> Option<data_structures::Queue<T>> {
+        let mut line = String::new();
+        let _byte_size = std::io::stdin().read_line(&mut line).unwrap();
+        let command: String = line.chars().filter(|c| !c.is_whitespace()).collect();
+
         let mut queue: data_structures::Queue<T> = data_structures::Queue::new();
-        
+
         for c in command.chars() {
-            let mut msg: Option<Message> = None;
+
+            let mut msg: Option<WordProgressFeedback> = None;
             for searched_word in self.searched_words.iter_mut() {
-                let return_val = searched_word.check_char(&c, &mut self.freezed_words);
+                let return_val = searched_word.check_char(&c);
 
                 match return_val {
-                    Some(Message::FinishedWord) => {
+                    Some(WordProgressFeedback::FinishedWord) => {
                         queue.push(searched_word.get_return_type());
                         msg = return_val;
-                        if searched_word.size() > 1{
-                            self.active_words -= 1;
-                        }
                     }
-                    Some(Message::StartedWord) => {
-                        self.active_words += 1;
-                    }
-                    Some(Message::WordTypedIncorrectly) => {
-                        show_helpful_message(Message::WordTypedIncorrectly);
+                    Some(WordProgressFeedback::IncorrectCommand) => {
+                        show_helpful_message(HelpfulMessage::IncorrectCommand);
+                        self.reset();
                         return None;
-                    },
-                    _ => (),
+                    }
+                    //(NOTE): None means that the wordProgress is freezed or the character is correct but it's not the start nor the end of the command
+                    None => (),
                 }
             }
-            //println!("freezed words {} searched words {}", self.freezed_words, self.searched_words.len());
-            if self.freezed_words == self.searched_words.len(){
-                show_helpful_message(Message::IncorrectWord);
-                return None;
-            }
-
-            //reseting every wordProgress when one word is finished
-            if msg == Some(Message::FinishedWord) {
+            //(NOTE): reseting every wordProgress when one word is finished
+            //we have to do this here cuz we're taking a mut reference to the searched_words
+            if msg == Some(WordProgressFeedback::FinishedWord) {
                 for searched_word in self.searched_words.iter_mut() {
                     searched_word.reset();
                 }
-                self.freezed_words = 0;
+            }
+            
+        }
+        let mut freezed_count = 0;
+        let mut count = 0;
+        for searched_word in self.searched_words.iter(){
+            count += 1;
+            if searched_word.freeze{
+                freezed_count += 1;
+            }
+
+            if searched_word.active{
+                show_helpful_message(HelpfulMessage::CommandTypedIncorrectly);
+                self.reset();
+                return None;
             }
         }
-        
+        if freezed_count == count{
+            show_helpful_message(HelpfulMessage::IncorrectCommand);
+            self.reset();
+            return None;
+        }
+
         Some(queue)
+    }
+
+    pub fn reset(&mut self){
+        for searched_word in self.searched_words.iter_mut() {
+            searched_word.reset();
+        }
     }
 }
 
 #[derive(PartialEq)]
-enum Message {
-    StartedWord,
-    FinishedWord,
-    IncorrectWord,
-    WordTypedIncorrectly,
+enum HelpfulMessage {
+    IncorrectCommand,
+    CommandTypedIncorrectly,
     GameTutorial,
     OnlyNumber,
 }
 
-fn show_helpful_message(message: Message) {
-    match message {
-        Message::OnlyNumber => {
-            println!("-------------------------------");
-            println!("CommandError: number only given");
-            println!("\nAfter typing the number \nyou should type the command \nyou want to do \n(ex. 10 right)\n(moving right ten units)");
-            println!("-------------------------------");
-        }
-        Message::IncorrectWord => {
-            println!("-------------------------------");
-            println!("CommandError: incorrect command");
-            println!("\ncommands should look like this:\n2 right 5 up\nfor going 2 units right and 2 up\nfor more commands check \n'info' command or info in menu");
-            println!("-------------------------------");
-        }
-        Message::WordTypedIncorrectly => {
-            println!("-------------------------------");
-            println!("CommandError: command typed incorrectly");
-            println!("\nupps, a misstroke \njust write the command again\nor check 'info' to see\nhow to write the commands");
-            println!("-------------------------------");
-        }
-        Message::GameTutorial => {
-            println!("----------------------------------------------------");
-            println!("                    Game tutorial");
-            println!("\nIn this game you have a few commands incluing");
-            println!("right - moving right");
-            println!("left - moving left");
-            println!("up - moving up");
-            println!("down - moving down");
-            println!("wait - waiting a game tick without doing anything");
-            println!("info - showing this tutorial :>");
-            println!("quit - quitting the game\n");
-            println!("The game updates whenever you send a command\nwe call that game tick\n");
-            println!("You can use a single command multiple times ex\n3 right 2 up\nmoves right 3 times and up 2 times");
-            println!("----------------------------------------------------");
-        },
-        _ => ()
-    }
+#[derive(PartialEq)]
+enum WordProgressFeedback{
+    FinishedWord,
+    IncorrectCommand,
 }
-
-//(NOTE): if we have two words with the same prefix (eg. map and maple) the shorter word will win
-//for example with command maple the map will register and not the maple
 
 pub struct WordProgress<T> {
     word: String,
     current_char: Option<char>,
+
     current_word_index: usize,
     word_size: usize,
-    freeze: bool,
-    started: bool,
+
     return_type: T,
+
+    freeze: bool,
+    active: bool,
 }
 
 enum CharacterValidation {
@@ -132,7 +117,7 @@ enum CharacterValidation {
     NoCharacter,
 }
 
-impl<T:Copy> WordProgress<T> {
+impl<T: Copy> WordProgress<T> {
     pub fn new(word: String, return_type: T) -> Self {
         let word = word;
         let word_size = word.chars().count();
@@ -143,7 +128,7 @@ impl<T:Copy> WordProgress<T> {
             current_word_index: 0,
             word_size,
             freeze: false,
-            started: false,
+            active: false,
         }
     }
 
@@ -165,7 +150,7 @@ impl<T:Copy> WordProgress<T> {
         }
     }
 
-    fn check_char(&mut self, c: &char, freezed_words: &mut usize) -> Option<Message> {
+    fn check_char(&mut self, c: &char) -> Option<WordProgressFeedback> {
         if self.freeze {
             return None;
         }
@@ -175,25 +160,30 @@ impl<T:Copy> WordProgress<T> {
             .equate_chars(c)
         {
             CharacterValidation::CorrectCharacter => {
+                //println!("Correct on char {}", c);
                 self.current_word_index += 1;
 
-                if !self.started && self.word_size > 1 {
-                    self.started = true;
-                    return Some(Message::StartedWord);
+                //(NOTE): word_size check for single digit numbers
+                if !self.active && self.word_size > 1 {
+                    self.active = true;
                 }
 
                 if self.current_word_index == self.word_size {
+                    self.active = false;
                     //println!("Finished the word {}", self.word);
-                    return Some(Message::FinishedWord);
+                    return Some(WordProgressFeedback::FinishedWord);
                 }
             }
             CharacterValidation::IncorrectCharacter => {
+                if self.active{
+                    return Some(WordProgressFeedback::IncorrectCommand);
+                }
+                //println!("Incorrect on char {}", c);
                 self.freeze = true;
-                *freezed_words += 1;
             }
             CharacterValidation::NoCharacter => {
+                //(NOTE): we should never get to this state
                 //println!("Finished a word ({})", self.word);
-                return Some(Message::FinishedWord);
             }
         }
         None
@@ -202,15 +192,54 @@ impl<T:Copy> WordProgress<T> {
     fn reset(&mut self) {
         self.current_word_index = 0;
         self.freeze = false;
-        self.started = false;
+        self.active = false;
     }
 
     fn get_return_type(&self) -> T {
         self.return_type
     }
 
-    fn size(&self) -> usize{
+    fn size(&self) -> usize {
         self.word_size
+    }
+}
+
+fn show_helpful_message(message: HelpfulMessage) {
+    match message {
+        HelpfulMessage::OnlyNumber => {
+            println!("-------------------------------");
+            println!("CommandError: number only given");
+            println!("\nAfter typing the number \nyou should type the command \nyou want to do \n(ex. 10 right)\n(moving right ten units)");
+            println!("-------------------------------");
+        }
+        HelpfulMessage::IncorrectCommand => {
+            println!("---------------------------------");
+            println!("CommandError: incorrect command");
+            println!("\ncommands should look like this:\n2 right 5 up\nfor going 2 units right and 2 up\nfor more commands check \n'info' command or info in menu");
+            println!("-------------------------------");
+        }
+        HelpfulMessage::CommandTypedIncorrectly => {
+            println!("----------------------------------");
+            println!("CommandError: command typed incorrectly");
+            println!("\nupps, a misstroke \njust write the command again\nor check 'info' to see\nhow to write the commands");
+            println!("-------------------------------");
+        }
+        HelpfulMessage::GameTutorial => {
+            println!("----------------------------------------------------");
+            println!("                    Game tutorial");
+            println!("\nIn this game you have a few commands incluing");
+            println!("right - moving right");
+            println!("left - moving left");
+            println!("up - moving up");
+            println!("down - moving down");
+            println!("wait - waiting a game tick without doing anything");
+            println!("info - showing this tutorial :>");
+            println!("quit - quitting the game\n");
+            println!("The game updates whenever you send a command\nwe call that game tick\n");
+            println!("You can use a single command multiple times ex\n3 right 2 up\nmoves right 3 times and up 2 times");
+            println!("----------------------------------------------------");
+        }
+        _ => (),
     }
 }
 

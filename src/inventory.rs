@@ -1,6 +1,7 @@
 use crate::data_structures;
 use crate::parser;
-use crate::{ItemType, LocationType};
+use crate::LocationType;
+use crate::weapons;
 
 struct ItemDescriptor {
     durability: i32,
@@ -8,29 +9,29 @@ struct ItemDescriptor {
     healing: Option<i32>,
 }
 
-fn get_item_description(item_type: &ItemType) -> ItemDescriptor {
+fn get_item_description(item_type: &weapons::ItemType) -> ItemDescriptor {
     match item_type {
-        ItemType::Rifle => ItemDescriptor {
+        weapons::ItemType::Rifle => ItemDescriptor {
             durability: 5,
             damage: Some(30),
             healing: None,
         },
-        ItemType::SmallMed => ItemDescriptor {
+        weapons::ItemType::SmallMed => ItemDescriptor {
             durability: 1,
             damage: None,
             healing: Some(20),
         },
-        ItemType::BigMed => ItemDescriptor {
+        weapons::ItemType::BigMed => ItemDescriptor {
             durability: 1,
             damage: None,
             healing: Some(50),
         },
-        ItemType::Sword => ItemDescriptor {
+        weapons::ItemType::Sword => ItemDescriptor {
             durability: 10,
             damage: Some(15),
             healing: None,
         },
-        ItemType::Shotgun => ItemDescriptor {
+        weapons::ItemType::Shotgun => ItemDescriptor {
             durability: 2,
             damage: Some(50),
             healing: None,
@@ -39,11 +40,11 @@ fn get_item_description(item_type: &ItemType) -> ItemDescriptor {
 }
 
 struct Node {
-    item_type: ItemType,
+    item_type: weapons::ItemType,
 }
 
 impl Node {
-    fn new(item_type: ItemType) -> Self {
+    fn new(item_type: weapons::ItemType) -> Self {
         Self { item_type }
     }
 
@@ -103,7 +104,7 @@ impl InventoryManager {
         }
     }
 
-    pub fn add_node(&mut self, item_type: ItemType) {
+    pub fn add_node(&mut self, item_type: weapons::ItemType) {
         self.nodes.push(Node::new(item_type));
 
         let length = self.nodes.len();
@@ -124,11 +125,7 @@ impl InventoryManager {
     }
 
     pub fn update(&mut self, location_type: &mut LocationType) -> bool {
-        let mut line = String::new();
-        let _byte_size = std::io::stdin().read_line(&mut line).unwrap();
-        let command: String = line.chars().filter(|c| !c.is_whitespace()).collect();
-
-        let queue: Option<data_structures::Queue<InvCommand>> = self.parser.parse(command);
+        let queue: Option<data_structures::Queue<InvCommand>> = self.parser.parse();
 
         match queue {
             Some(mut queue) => {
@@ -139,7 +136,7 @@ impl InventoryManager {
                             *location_type = LocationType::Map;
                             println!("Going to map");
                         }
-                        InvCommand::Quit => println!("Quitting"),
+                        InvCommand::Quit => return false,
                         InvCommand::Drop => println!("Dropping"),
                         InvCommand::Equip => println!("Equppin"),
                         InvCommand::Select(item_number) => {

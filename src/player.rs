@@ -1,4 +1,4 @@
-use crate::{input_parser, math};
+use crate::{map, math};
 
 pub struct PlayerManager {
     pub pos: math::Pos2,
@@ -9,12 +9,12 @@ impl PlayerManager {
         Self { pos }
     }
 
-    pub fn update(&mut self, input_command: input_parser::InputCommand) {
+    pub fn update(&mut self, input_command: map::MapCommand) {
         match input_command {
-            input_parser::InputCommand::Right => self.pos.x += 1,
-            input_parser::InputCommand::Left => self.pos.x -= 1,
-            input_parser::InputCommand::Up => self.pos.y -= 1,
-            input_parser::InputCommand::Down => self.pos.y += 1,
+            map::MapCommand::Right => self.pos.x += 1,
+            map::MapCommand::Left => self.pos.x -= 1,
+            map::MapCommand::Up => self.pos.y -= 1,
+            map::MapCommand::Down => self.pos.y += 1,
             _ => (),
         }
     }
