@@ -89,7 +89,6 @@ impl MapManager {
                     let command = queue.pop();
                     match command {
                         MapCommand::Inv => {
-                            println!("Inventory time");
                             *location_type = LocationType::Inventory;
                         }
                         MapCommand::Info => {

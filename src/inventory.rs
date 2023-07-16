@@ -4,6 +4,7 @@ use crate::player;
 use crate::weapons;
 use crate::LocationType;
 
+#[derive(Copy, Clone)]
 struct Node {
     item_type: weapons::ItemType,
 }
@@ -57,14 +58,22 @@ enum InvCommand {
 pub struct InventoryManager {
     nodes: Vec<Node>,
     node_rendering_flag: DisableNodeRendering,
+    player_stats_flag: DisablePlayerStatsRendering,
     parser: parser::ParserManager<InvCommand>,
+    last_number_selected: Option<usize>,
 }
 
 #[derive(PartialEq)]
 pub struct DisableNodeRendering(pub bool);
 
+#[derive(PartialEq)]
+pub struct DisablePlayerStatsRendering(pub bool);
+
 impl InventoryManager {
-    pub fn new(node_rendering_flag: DisableNodeRendering) -> Self {
+    pub fn new(
+        node_rendering_flag: DisableNodeRendering,
+        player_stats_flag: DisablePlayerStatsRendering,
+    ) -> Self {
         let map_progress = parser::WordProgress::new("map".to_string(), InvCommand::Map);
         let quit_progress = parser::WordProgress::new("quit".to_string(), InvCommand::Quit);
         let equip_progress = parser::WordProgress::new("equip".to_string(), InvCommand::Equip);
@@ -81,15 +90,17 @@ impl InventoryManager {
 
         Self {
             node_rendering_flag,
+            player_stats_flag,
             nodes: Vec::new(),
             parser,
+            last_number_selected: None,
         }
     }
 
     pub fn add_node(&mut self, item_type: weapons::ItemType) {
         self.nodes.push(Node::new(item_type));
 
-        let length = self.nodes.len();
+        let length = self.nodes.len() - 1;
 
         self.parser.add_word(parser::WordProgress::new(
             length.to_string(),
@@ -98,18 +109,18 @@ impl InventoryManager {
     }
 
     pub fn render(&mut self, player: &mut player::PlayerManager) {
-        if self.node_rendering_flag == DisableNodeRendering(true) {
-            return;
-        }
-
         if player.get_new_item_bool() {
-            println!("hello");
             self.add_node(player.get_most_recent_item());
         }
-        //println!("size {}", self.nodes.len());
-        render_player_stats(&player);
-        for node in self.nodes.iter() {
-            node.render();
+
+        if self.node_rendering_flag == DisableNodeRendering(false) {
+            for node in self.nodes.iter() {
+                node.render();
+            }
+        }
+
+        if self.player_stats_flag == DisablePlayerStatsRendering(false) {
+            render_player_stats(&player);
         }
     }
 
@@ -128,10 +139,22 @@ impl InventoryManager {
                             println!("Going to map");
                         }
                         InvCommand::Quit => return false,
-                        InvCommand::Drop => println!("Dropping"),
+                        InvCommand::Drop => {
+                            if let Some(index) = self.last_number_selected {
+                                let size = self.nodes.len();
+                                if index >= size{
+                                    println!("Index out of bounds");
+                                }else{
+                                    self.nodes[index] = self.nodes[size - 1];
+                                    self.nodes.pop();
+                                }
+                            }else{
+                                println!("Please select an item slot");
+                            }
+                        }
                         InvCommand::Equip => println!("Equppin"),
                         InvCommand::Select(item_number) => {
-                            println!("Selecting number {}", item_number);
+                            self.last_number_selected = Some(item_number);
                         }
                         InvCommand::Tutorial => {
                             println!("Tutorial");
