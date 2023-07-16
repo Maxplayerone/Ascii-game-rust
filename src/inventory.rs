@@ -4,37 +4,6 @@ use crate::player;
 use crate::weapons;
 use crate::LocationType;
 
-#[derive(Copy, Clone)]
-struct Node {
-    item_type: weapons::ItemType,
-}
-
-impl Node {
-    fn new(item_type: weapons::ItemType) -> Self {
-        Self { item_type }
-    }
-
-    fn render(&self) {
-        let descriptor = self.item_type.get_desc();
-
-        println!("------------------------------");
-        println!("Item: {}", self.item_type.string());
-        println!("Durability: {}", descriptor.durability);
-
-        match descriptor.damage {
-            Some(damage) => println!("Damage: {}", damage),
-            None => println!("Damage: None"),
-        }
-
-        match descriptor.healing {
-            Some(healing) => println!("Healing: {}", healing),
-            None => println!("Healing: None"),
-        }
-
-        println!("------------------------------");
-    }
-}
-
 fn render_player_stats(player: &player::PlayerManager) {
     println!("-------------------------");
     println!("           *      *");
@@ -43,6 +12,26 @@ fn render_player_stats(player: &player::PlayerManager) {
     println!("Health: {}", player.get_health());
     println!("Item count: {}", player.get_item_count());
     println!("-------------------------\n");
+}
+
+fn render_item_node(item: &weapons::ItemType){
+    let descriptor = item.get_desc();
+
+    println!("------------------------------");
+    println!("Item: {}", item.string());
+    println!("Durability: {}", descriptor.durability);
+
+    match descriptor.damage {
+        Some(damage) => println!("Damage: {}", damage),
+        None => println!("Damage: None"),
+    }
+
+    match descriptor.healing {
+        Some(healing) => println!("Healing: {}", healing),
+        None => println!("Healing: None"),
+    } 
+
+    println!("------------------------------");   
 }
 
 #[derive(PartialEq, Copy, Clone)]
@@ -56,7 +45,6 @@ enum InvCommand {
 }
 
 pub struct InventoryManager {
-    nodes: Vec<Node>,
     node_rendering_flag: DisableNodeRendering,
     player_stats_flag: DisablePlayerStatsRendering,
     parser: parser::ParserManager<InvCommand>,
@@ -74,6 +62,16 @@ impl InventoryManager {
         node_rendering_flag: DisableNodeRendering,
         player_stats_flag: DisablePlayerStatsRendering,
     ) -> Self {
+            let parser = Self::setup_basic_inventory_parser();
+        Self {
+            node_rendering_flag,
+            player_stats_flag,
+            parser,
+            last_number_selected: None,
+        }
+    }
+
+    fn setup_basic_inventory_parser() -> parser::ParserManager<InvCommand>{
         let map_progress = parser::WordProgress::new("map".to_string(), InvCommand::Map);
         let quit_progress = parser::WordProgress::new("quit".to_string(), InvCommand::Quit);
         let equip_progress = parser::WordProgress::new("equip".to_string(), InvCommand::Equip);
@@ -86,36 +84,14 @@ impl InventoryManager {
         searched_words.push(equip_progress);
         searched_words.push(drop_progress);
         searched_words.push(tutorial_progress);
-        let parser = parser::ParserManager::<InvCommand>::new(searched_words);
-
-        Self {
-            node_rendering_flag,
-            player_stats_flag,
-            nodes: Vec::new(),
-            parser,
-            last_number_selected: None,
-        }
-    }
-
-    pub fn add_node(&mut self, item_type: weapons::ItemType) {
-        self.nodes.push(Node::new(item_type));
-
-        let length = self.nodes.len() - 1;
-
-        self.parser.add_word(parser::WordProgress::new(
-            length.to_string(),
-            InvCommand::Select(length),
-        ));
+        parser::ParserManager::<InvCommand>::new(searched_words)
     }
 
     pub fn render(&mut self, player: &mut player::PlayerManager) {
-        if player.get_new_item_bool() {
-            self.add_node(player.get_most_recent_item());
-        }
-
+        //we have player here cuz the game renders first and then updates
         if self.node_rendering_flag == DisableNodeRendering(false) {
-            for node in self.nodes.iter() {
-                node.render();
+            for item in &player.items{
+                render_item_node(item);
             }
         }
 
@@ -124,8 +100,20 @@ impl InventoryManager {
         }
     }
 
-    pub fn update(&mut self, location_type: &mut LocationType) -> bool {
-        //adding new items
+    pub fn update(&mut self, location_type: &mut LocationType, player: &mut player::PlayerManager) -> bool {
+        //adding new WordProgress items
+        if player.got_new_item{
+            self.parser = Self::setup_basic_inventory_parser();
+
+            for i in 0..player.item_count(){
+                self.parser.add_word(parser::WordProgress::new(
+                    i.to_string(),
+                    InvCommand::Select(i),
+                ));
+            }
+
+            player.set_got_new_item(false);
+        }
 
         let queue: Option<data_structures::Queue<InvCommand>> = self.parser.parse();
 
@@ -141,18 +129,21 @@ impl InventoryManager {
                         InvCommand::Quit => return false,
                         InvCommand::Drop => {
                             if let Some(index) = self.last_number_selected {
-                                let size = self.nodes.len();
-                                if index >= size{
-                                    println!("Index out of bounds");
-                                }else{
-                                    self.nodes[index] = self.nodes[size - 1];
-                                    self.nodes.pop();
+                                if player.current_selected_item == Some(index){
+                                    player.current_selected_item = None;
                                 }
+                                player.remove_item(index);
                             }else{
                                 println!("Please select an item slot");
                             }
                         }
-                        InvCommand::Equip => println!("Equppin"),
+                        InvCommand::Equip => {
+                            if let Some(index) = self.last_number_selected {
+                                 player.current_selected_item = Some(index);
+                            }else{
+                                println!("Please select an item slot");
+                            }
+                        },
                         InvCommand::Select(item_number) => {
                             self.last_number_selected = Some(item_number);
                         }

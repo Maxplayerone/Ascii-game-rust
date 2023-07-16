@@ -26,13 +26,14 @@ pub enum LocationType {
 impl GameState {
     fn new(name: String) -> Self {
         let (map_manager, player_pos) = map::MapManager::new();
-        let mut inventory_manager =
+        let inventory_manager =
             inventory::InventoryManager::new(inventory::DisableNodeRendering(false), inventory::DisablePlayerStatsRendering(true));
-        let player_manager = player::PlayerManager::new(player_pos, name, 100);
+        let mut player_manager = player::PlayerManager::new(player_pos, name, 100);
 
-        inventory_manager.add_node(weapons::ItemType::Rifle);
-        inventory_manager.add_node(weapons::ItemType::BigMed);
-        inventory_manager.add_node(weapons::ItemType::Shotgun);
+        player_manager.add_item(weapons::ItemType::Rifle);
+        player_manager.add_item(weapons::ItemType::BigMed);
+        player_manager.add_item(weapons::ItemType::Shotgun);
+
         Self {
             map_manager,
             inventory_manager,
@@ -46,7 +47,7 @@ impl GameState {
             LocationType::Map => self
                 .map_manager
                 .update(&mut self.location_type, &mut self.player_manager),
-            LocationType::Inventory => self.inventory_manager.update(&mut self.location_type),
+            LocationType::Inventory => self.inventory_manager.update(&mut self.location_type, &mut self.player_manager),
         }
     }
 

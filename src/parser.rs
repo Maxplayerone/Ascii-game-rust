@@ -86,7 +86,6 @@ enum HelpfulMessage {
     IncorrectCommand,
     CommandTypedIncorrectly,
     GameTutorial,
-    OnlyNumber,
 }
 
 #[derive(PartialEq)]
@@ -196,19 +195,10 @@ impl<T: Copy> WordProgress<T> {
         self.return_type
     }
 
-    fn size(&self) -> usize {
-        self.word_size
-    }
 }
 
 fn show_helpful_message(message: HelpfulMessage) {
     match message {
-        HelpfulMessage::OnlyNumber => {
-            println!("-------------------------------");
-            println!("CommandError: number only given");
-            println!("\nAfter typing the number \nyou should type the command \nyou want to do \n(ex. 10 right)\n(moving right ten units)");
-            println!("-------------------------------");
-        }
         HelpfulMessage::IncorrectCommand => {
             println!("---------------------------------");
             println!("CommandError: incorrect command");
@@ -236,6 +226,5 @@ fn show_helpful_message(message: HelpfulMessage) {
             println!("You can use a single command multiple times ex\n3 right 2 up\nmoves right 3 times and up 2 times");
             println!("----------------------------------------------------");
         }
-        _ => (),
     }
 }
