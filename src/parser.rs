@@ -37,7 +37,7 @@ impl<T: Copy> ParserManager<T> {
                     Some(WordProgressFeedback::IncorrectCommand) => {
                         show_helpful_message(HelpfulMessage::IncorrectCommand);
                         self.reset();
-                        return None;
+                        return self.parse();
                     }
                     //(NOTE): None means that the wordProgress is freezed or the character is correct but it's not the start nor the end of the command
                     None => (),
@@ -62,13 +62,13 @@ impl<T: Copy> ParserManager<T> {
             if searched_word.active {
                 show_helpful_message(HelpfulMessage::CommandTypedIncorrectly);
                 self.reset();
-                return None;
+                return self.parse();
             }
         }
         if freezed_count == count {
             show_helpful_message(HelpfulMessage::IncorrectCommand);
             self.reset();
-            return None;
+            return self.parse();
         }
 
         Some(queue)
