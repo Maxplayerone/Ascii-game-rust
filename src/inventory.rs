@@ -14,7 +14,7 @@ fn render_player_stats(player: &player::PlayerManager) {
     println!("-------------------------\n");
 }
 
-fn render_item_node(item: &weapons::ItemType){
+fn render_item_node(item: &weapons::ItemType) {
     let descriptor = item.get_desc();
 
     println!("------------------------------");
@@ -29,9 +29,9 @@ fn render_item_node(item: &weapons::ItemType){
     match descriptor.healing {
         Some(healing) => println!("Healing: {}", healing),
         None => println!("Healing: None"),
-    } 
+    }
 
-    println!("------------------------------");   
+    println!("------------------------------");
 }
 
 #[derive(PartialEq, Copy, Clone)]
@@ -62,7 +62,7 @@ impl InventoryManager {
         node_rendering_flag: DisableNodeRendering,
         player_stats_flag: DisablePlayerStatsRendering,
     ) -> Self {
-            let parser = Self::setup_basic_inventory_parser();
+        let parser = Self::setup_basic_inventory_parser();
         Self {
             node_rendering_flag,
             player_stats_flag,
@@ -71,7 +71,7 @@ impl InventoryManager {
         }
     }
 
-    fn setup_basic_inventory_parser() -> parser::ParserManager<InvCommand>{
+    fn setup_basic_inventory_parser() -> parser::ParserManager<InvCommand> {
         let map_progress = parser::WordProgress::new("map".to_string(), InvCommand::Map);
         let quit_progress = parser::WordProgress::new("quit".to_string(), InvCommand::Quit);
         let equip_progress = parser::WordProgress::new("equip".to_string(), InvCommand::Equip);
@@ -90,7 +90,7 @@ impl InventoryManager {
     pub fn render(&mut self, player: &mut player::PlayerManager) {
         //we have player here cuz the game renders first and then updates
         if self.node_rendering_flag == DisableNodeRendering(false) {
-            for item in &player.items{
+            for item in &player.items {
                 render_item_node(item);
             }
         }
@@ -100,12 +100,16 @@ impl InventoryManager {
         }
     }
 
-    pub fn update(&mut self, location_type: &mut LocationType, player: &mut player::PlayerManager) -> bool {
+    pub fn update(
+        &mut self,
+        location_type: &mut LocationType,
+        player: &mut player::PlayerManager,
+    ) -> bool {
         //adding new WordProgress items
-        if player.got_new_item{
+        if player.got_new_item {
             self.parser = Self::setup_basic_inventory_parser();
 
-            for i in 0..player.item_count(){
+            for i in 0..player.item_count() {
                 self.parser.add_word(parser::WordProgress::new(
                     i.to_string(),
                     InvCommand::Select(i),
@@ -129,21 +133,21 @@ impl InventoryManager {
                         InvCommand::Quit => return false,
                         InvCommand::Drop => {
                             if let Some(index) = self.last_number_selected {
-                                if player.current_selected_item == Some(index){
+                                if player.current_selected_item == Some(index) {
                                     player.current_selected_item = None;
                                 }
                                 player.remove_item(index);
-                            }else{
+                            } else {
                                 println!("Please select an item slot");
                             }
                         }
                         InvCommand::Equip => {
                             if let Some(index) = self.last_number_selected {
-                                 player.current_selected_item = Some(index);
-                            }else{
+                                player.current_selected_item = Some(index);
+                            } else {
                                 println!("Please select an item slot");
                             }
-                        },
+                        }
                         InvCommand::Select(item_number) => {
                             self.last_number_selected = Some(item_number);
                         }

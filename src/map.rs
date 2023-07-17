@@ -1,11 +1,10 @@
-use crate::{
-    chest, data_structures, enemy, level_parser, math, parser, player, LocationType,
-};
+use crate::{chest, data_structures, enemy, level_parser, math, parser, player, LocationType};
 
 const ENEMY_SYMBOL: char = '@';
 const PLAYER_SYMBOL: char = '0';
 const GRASS_SYMBOL: char = 'x';
 const CHEST_SYMBOL: char = '=';
+const UNBREAKABLE_SYMBOL: char = '&';
 
 pub struct MapManager {
     map: Vec<char>,
@@ -15,6 +14,7 @@ pub struct MapManager {
 
     enemy_manager: enemy::EnemyManager,
     chests: Vec<chest::Chest>,
+    unbreakable: Vec<math::Pos2>,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -32,10 +32,16 @@ pub enum MapCommand {
 
 impl MapManager {
     pub fn new() -> (Self, math::Pos2) {
-        let (map, map_info) = level_parser::parse_level(PLAYER_SYMBOL, ENEMY_SYMBOL, CHEST_SYMBOL);
+        let (map, map_info) = level_parser::parse_level(
+            PLAYER_SYMBOL,
+            ENEMY_SYMBOL,
+            CHEST_SYMBOL,
+            UNBREAKABLE_SYMBOL,
+        );
         let map_dimensions = map_info.map_dimensions;
         let enemy_manager = enemy::EnemyManager::new(map_info.enemies);
         let chests = map_info.chests;
+        let unbreakable = map_info.unbreakable;
         let player_pos = map_info.player;
 
         let left = parser::WordProgress::new("left".to_string(), MapCommand::Left);
@@ -71,11 +77,41 @@ impl MapManager {
                 parser,
                 enemy_manager,
                 chests,
+                unbreakable,
             },
             player_pos,
         )
     }
-    // (NOTE) we have inventory_manager in the arguments because we give it the items via input_parser
+
+    fn check_if_player_can_move(&self, command: &MapCommand, player_pos: (usize, usize)) -> bool {
+        let mut player_pos_after_command = math::Pos2::new(0, 0);
+        let x = player_pos.0.try_into().unwrap();
+        let y = player_pos.1.try_into().unwrap();
+        match command {
+            MapCommand::Left => {
+                player_pos_after_command = math::Pos2::new(x - 1, y)
+            }
+            MapCommand::Right => {
+                player_pos_after_command = math::Pos2::new(x + 1, y)
+            }
+            MapCommand::Up => {
+                player_pos_after_command = math::Pos2::new(x, y + 1)
+            }
+            MapCommand::Down => {
+                player_pos_after_command = math::Pos2::new(x, y - 1)
+            }
+            _ => return false,
+        }
+
+        for block in self.unbreakable.iter() {
+            if block.x == player_pos_after_command.x && block.y == player_pos_after_command.y {
+                println!("Cannot move");
+                return false;
+            }
+        }
+        true
+    }
+
     pub fn update(
         &mut self,
         location_type: &mut LocationType,
@@ -99,31 +135,34 @@ impl MapManager {
                         | MapCommand::Up
                         | MapCommand::Down => {
                             for _ in 0..move_multiplier {
-                                player.update(command);
-                                //player + chest collission detection + resolution
-                                let size = self.chests.len();
-                                for i in 0..size {
-                                    if are_colliding(&self.chests[i].pos, &player.pos) {
-                                        player.add_item(*self.chests[i].get_item());
-                                        //we're moving the value from chests cuz we're deleting
-                                        //the chest thingy down there
-                                        if size > 1 {
-                                            self.chests[size - 1] = self.chests[i];
-                                            self.chests.pop();
-                                        } else {
-                                            self.chests.pop();
+                                if self.check_if_player_can_move(&command, player.get_position()) {
+                                    player.update(command);
+                                    //player + chest collission detection + resolution
+                                    let size = self.chests.len();
+                                    for i in 0..size {
+                                        if are_colliding(&self.chests[i].pos, &player.pos) {
+                                            println!("heeeeeeelo");
+                                            player.add_item(*self.chests[i].get_item());
+                                            //we're moving the value from chests cuz we're deleting
+                                            //the chest thingy down there
+                                            if size > 1 {
+                                                self.chests[size - 1] = self.chests[i];
+                                                self.chests.pop();
+                                            } else {
+                                                self.chests.pop();
+                                            }
+                                            println!("Colliding");
                                         }
-                                        println!("Colliding");
                                     }
-                                }
 
-                                self.enemy_manager.update(&player.pos);
+                                    self.enemy_manager.update(&player.pos, &self.unbreakable);
+                                }
                             }
                             move_multiplier = 1;
                         }
                         MapCommand::Wait => {
                             for _ in 0..move_multiplier {
-                                self.enemy_manager.update(&player.pos);
+                                self.enemy_manager.update(&player.pos, &self.unbreakable);
                             }
                             move_multiplier = 1;
                         }
@@ -170,6 +209,13 @@ impl MapManager {
             let x: usize = self.chests[i].pos.x.try_into().unwrap();
             let y: usize = self.chests[i].pos.y.try_into().unwrap();
             self.map[y * width_usize + x] = CHEST_SYMBOL;
+        }
+
+        //rendering unbreakable blocks
+        for i in 0..self.unbreakable.len() {
+            let x: usize = self.unbreakable[i].x.try_into().unwrap();
+            let y: usize = self.unbreakable[i].y.try_into().unwrap();
+            self.map[y * width_usize + x] = UNBREAKABLE_SYMBOL;
         }
 
         //rendering the rest

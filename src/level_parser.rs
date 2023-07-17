@@ -8,6 +8,7 @@ pub struct ParserInfo {
     pub map_dimensions: math::Pos2,
     pub enemies: Vec<math::Pos2>,
     pub chests: Vec<chest::Chest>,
+    pub unbreakable: Vec<math::Pos2>,
 }
 
 impl ParserInfo {
@@ -17,6 +18,7 @@ impl ParserInfo {
             map_dimensions: math::Pos2::new(0, 0),
             enemies: Vec::new(),
             chests: Vec::new(),
+            unbreakable: Vec::new(),
         }
     }
 }
@@ -25,6 +27,7 @@ pub fn parse_level(
     player_symbol: char,
     enemy_symbol: char,
     chest_symbol: char,
+    unbreakable_symbol: char,
 ) -> (Vec<char>, ParserInfo) {
     // Open the file in read-only mode
     let file = File::open("src/level_one.sag").unwrap();
@@ -67,6 +70,10 @@ pub fn parse_level(
                     math::Pos2::new(x, y),
                     weapons::ItemType::Rifle,
                 ));
+            } else if c == unbreakable_symbol {
+                let x: i32 = i % map_width;
+                let y: i32 = i / map_width;
+                info.unbreakable.push(math::Pos2::new(x, y));
             }
             map.push(c);
             i += 1;

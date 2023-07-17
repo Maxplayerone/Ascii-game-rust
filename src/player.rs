@@ -45,17 +45,17 @@ impl PlayerManager {
         self.got_new_item = true;
     }
 
-    pub fn item_count(&mut self) -> usize{
+    pub fn item_count(&mut self) -> usize {
         self.items.len()
     }
 
-    pub fn remove_item(&mut self, index: usize){
+    pub fn remove_item(&mut self, index: usize) {
         let vec_size = self.item_count();
         self.items[index] = self.items[vec_size - 1];
         self.items.pop();
     }
 
-    pub fn set_got_new_item(&mut self, did_got_new_item: bool){
+    pub fn set_got_new_item(&mut self, did_got_new_item: bool) {
         self.got_new_item = did_got_new_item
     }
 
@@ -70,5 +70,4 @@ impl PlayerManager {
     pub fn get_item_count(&self) -> usize {
         self.items.len()
     }
-
 }

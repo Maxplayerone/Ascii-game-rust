@@ -194,7 +194,6 @@ impl<T: Copy> WordProgress<T> {
     fn get_return_type(&self) -> T {
         self.return_type
     }
-
 }
 
 fn show_helpful_message(message: HelpfulMessage) {

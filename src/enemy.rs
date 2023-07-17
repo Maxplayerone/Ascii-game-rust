@@ -14,10 +14,22 @@ impl EnemyManager {
         }
     }
 
-    pub fn update(&mut self, player_pos: &math::Pos2) {
+    fn check_if_enemy_can_move(enemy_pos: &math::Pos2, added_pos: &math::Pos2, blocks: &Vec<math::Pos2>) -> bool {
+        let enemy_pos_after_move = math::Pos2::new(enemy_pos.x + added_pos.x, enemy_pos.y + added_pos.y);
+        for block in blocks.iter(){
+            if block.x == enemy_pos_after_move.x && block.y == enemy_pos_after_move.y{
+                return false;
+            }
+        }
+        true
+    }
+
+    pub fn update(&mut self, player_pos: &math::Pos2, blocks: &Vec<math::Pos2>) {
         for enemy in self.enemies.iter_mut() {
             let pos = find_closest_position_to_player(enemy, player_pos);
-            *enemy = *enemy + pos;
+            if Self::check_if_enemy_can_move(&enemy, &pos, blocks){
+                *enemy = *enemy + pos;
+            }
         }
     }
 
