@@ -84,27 +84,26 @@ impl MapManager {
     }
 
     fn check_if_player_can_move(&self, command: &MapCommand, player_pos: (usize, usize)) -> bool {
-        let mut player_pos_after_command = math::Pos2::new(0, 0);
-        let x = player_pos.0.try_into().unwrap();
-        let y = player_pos.1.try_into().unwrap();
+        let mut x = player_pos.0.try_into().unwrap();
+        let mut y = player_pos.1.try_into().unwrap();
         match command {
             MapCommand::Left => {
-                player_pos_after_command = math::Pos2::new(x - 1, y)
+                x -= 1
             }
             MapCommand::Right => {
-                player_pos_after_command = math::Pos2::new(x + 1, y)
+                x += 1
             }
             MapCommand::Up => {
-                player_pos_after_command = math::Pos2::new(x, y + 1)
+                y += 1
             }
             MapCommand::Down => {
-                player_pos_after_command = math::Pos2::new(x, y - 1)
+                y -= 1
             }
             _ => return false,
         }
 
         for block in self.unbreakable.iter() {
-            if block.x == player_pos_after_command.x && block.y == player_pos_after_command.y {
+            if block.x == x && block.y == y {
                 println!("Cannot move");
                 return false;
             }
@@ -155,14 +154,14 @@ impl MapManager {
                                         }
                                     }
 
-                                    self.enemy_manager.update(&player.pos, &self.unbreakable);
+                                    self.enemy_manager.update(&player.pos, &self.unbreakable, location_type);
                                 }
                             }
                             move_multiplier = 1;
                         }
                         MapCommand::Wait => {
                             for _ in 0..move_multiplier {
-                                self.enemy_manager.update(&player.pos, &self.unbreakable);
+                                self.enemy_manager.update(&player.pos, &self.unbreakable, location_type);
                             }
                             move_multiplier = 1;
                         }
