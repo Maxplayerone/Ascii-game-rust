@@ -14,37 +14,47 @@ impl EnemyManager {
         }
     }
 
-    fn check_if_enemy_can_move(enemy_pos: &math::Pos2, added_pos: &math::Pos2, blocks: &Vec<math::Pos2>) -> bool {
-        let enemy_pos_after_move = math::Pos2::new(enemy_pos.x + added_pos.x, enemy_pos.y + added_pos.y);
-        for block in blocks.iter(){
-            if block.x == enemy_pos_after_move.x && block.y == enemy_pos_after_move.y{
+    fn check_if_enemy_can_move(
+        enemy_pos: &math::Pos2,
+        added_pos: &math::Pos2,
+        blocks: &Vec<math::Pos2>,
+    ) -> bool {
+        let enemy_pos_after_move =
+            math::Pos2::new(enemy_pos.x + added_pos.x, enemy_pos.y + added_pos.y);
+        for block in blocks.iter() {
+            if block.x == enemy_pos_after_move.x && block.y == enemy_pos_after_move.y {
                 return false;
             }
         }
         true
     }
 
-    pub fn update(&mut self, player_pos: &math::Pos2, blocks: &Vec<math::Pos2>, location_type: &mut LocationType) {
+    pub fn update(
+        &mut self,
+        player_pos: &math::Pos2,
+        blocks: &Vec<math::Pos2>,
+        location_type: &mut LocationType,
+    ) {
         let mut enemy_to_delete: Option<usize> = None;
         for (index, enemy) in self.enemies.iter_mut().enumerate() {
             let (pos, did_enemy_hit_player) = find_closest_position_to_player(enemy, player_pos);
-            if did_enemy_hit_player{
+            if did_enemy_hit_player {
                 *location_type = LocationType::Fight;
                 enemy_to_delete = Some(index);
                 break;
             }
-            if Self::check_if_enemy_can_move(&enemy, &pos, blocks){
+            if Self::check_if_enemy_can_move(&enemy, &pos, blocks) {
                 *enemy = *enemy + pos;
             }
         }
-        match enemy_to_delete{
+        match enemy_to_delete {
             Some(index) => {
                 let size = self.enemies.len();
                 self.enemies[index] = self.enemies[size - 1];
                 self.enemies.pop();
                 self.current_enemy_index -= 1;
             }
-            None => ()
+            None => (),
         }
     }
 

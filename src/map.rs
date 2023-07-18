@@ -87,18 +87,10 @@ impl MapManager {
         let mut x = player_pos.0.try_into().unwrap();
         let mut y = player_pos.1.try_into().unwrap();
         match command {
-            MapCommand::Left => {
-                x -= 1
-            }
-            MapCommand::Right => {
-                x += 1
-            }
-            MapCommand::Up => {
-                y += 1
-            }
-            MapCommand::Down => {
-                y -= 1
-            }
+            MapCommand::Left => x -= 1,
+            MapCommand::Right => x += 1,
+            MapCommand::Up => y += 1,
+            MapCommand::Down => y -= 1,
             _ => return false,
         }
 
@@ -154,14 +146,22 @@ impl MapManager {
                                         }
                                     }
 
-                                    self.enemy_manager.update(&player.pos, &self.unbreakable, location_type);
+                                    self.enemy_manager.update(
+                                        &player.pos,
+                                        &self.unbreakable,
+                                        location_type,
+                                    );
                                 }
                             }
                             move_multiplier = 1;
                         }
                         MapCommand::Wait => {
                             for _ in 0..move_multiplier {
-                                self.enemy_manager.update(&player.pos, &self.unbreakable, location_type);
+                                self.enemy_manager.update(
+                                    &player.pos,
+                                    &self.unbreakable,
+                                    location_type,
+                                );
                             }
                             move_multiplier = 1;
                         }

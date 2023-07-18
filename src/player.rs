@@ -3,7 +3,7 @@ use crate::{map, math, weapons};
 pub struct PlayerManager {
     pub pos: math::Pos2,
 
-    pub items: Vec<weapons::ItemType>,
+    pub items: Vec<weapons::Item>,
     pub got_new_item: bool,
 
     health: usize,
@@ -40,8 +40,8 @@ impl PlayerManager {
         (x, y)
     }
 
-    pub fn add_item(&mut self, item: weapons::ItemType) {
-        self.items.push(item);
+    pub fn add_item(&mut self, item_type: weapons::ItemType) {
+        self.items.push(weapons::Item::new(item_type));
         self.got_new_item = true;
     }
 

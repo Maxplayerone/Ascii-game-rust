@@ -1,6 +1,7 @@
 mod chest;
 mod data_structures;
 mod enemy;
+mod fight;
 mod inventory;
 mod level_parser;
 mod map;
@@ -8,7 +9,6 @@ mod math;
 mod parser;
 mod player;
 mod weapons;
-mod fight;
 
 struct GameState {
     location_type: LocationType,
@@ -58,7 +58,9 @@ impl GameState {
             LocationType::Inventory => self
                 .inventory_manager
                 .update(&mut self.location_type, &mut self.player_manager),
-            LocationType::Fight => self.fight_manager.update(&self.player_manager, &mut self.location_type),
+            LocationType::Fight => self
+                .fight_manager
+                .update(&mut self.player_manager, &mut self.location_type),
         }
     }
 

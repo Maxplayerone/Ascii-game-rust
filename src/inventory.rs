@@ -14,7 +14,7 @@ fn render_player_stats(player: &player::PlayerManager) {
     println!("-------------------------\n");
 }
 
-fn render_item_node(item: &weapons::ItemType) {
+fn render_item_node(item: &weapons::Item) {
     let descriptor = item.get_desc();
 
     println!("------------------------------");
