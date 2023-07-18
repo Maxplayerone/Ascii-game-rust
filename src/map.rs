@@ -41,8 +41,8 @@ impl MapManager {
         let map_dimensions = map_info.map_dimensions;
         let enemy_manager = enemy::EnemyManager::new(map_info.enemies);
         let chests = map_info.chests;
-        let unbreakable = map_info.unbreakable;
         let player_pos = map_info.player;
+        let unbreakable = map_info.unbreakable;
 
         let left = parser::WordProgress::new("left".to_string(), MapCommand::Left);
         let right = parser::WordProgress::new("right".to_string(), MapCommand::Right);
@@ -75,9 +75,9 @@ impl MapManager {
                 map,
                 map_dimensions,
                 parser,
-                enemy_manager,
                 chests,
                 unbreakable,
+                enemy_manager,
             },
             player_pos,
         )

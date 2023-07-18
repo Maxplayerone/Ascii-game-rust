@@ -16,6 +16,7 @@ struct GameState {
     map_manager: map::MapManager,
     inventory_manager: inventory::InventoryManager,
     fight_manager: fight::FightManager,
+
     player_manager: player::PlayerManager,
 }
 
@@ -57,7 +58,7 @@ impl GameState {
             LocationType::Inventory => self
                 .inventory_manager
                 .update(&mut self.location_type, &mut self.player_manager),
-            LocationType::Fight => self.fight_manager.update(),
+            LocationType::Fight => self.fight_manager.update(&self.player_manager, &mut self.location_type),
         }
     }
 

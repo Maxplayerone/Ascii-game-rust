@@ -25,15 +25,26 @@ impl EnemyManager {
     }
 
     pub fn update(&mut self, player_pos: &math::Pos2, blocks: &Vec<math::Pos2>, location_type: &mut LocationType) {
-        for enemy in self.enemies.iter_mut() {
+        let mut enemy_to_delete: Option<usize> = None;
+        for (index, enemy) in self.enemies.iter_mut().enumerate() {
             let (pos, did_enemy_hit_player) = find_closest_position_to_player(enemy, player_pos);
             if did_enemy_hit_player{
                 *location_type = LocationType::Fight;
-                return;
+                enemy_to_delete = Some(index);
+                break;
             }
             if Self::check_if_enemy_can_move(&enemy, &pos, blocks){
                 *enemy = *enemy + pos;
             }
+        }
+        match enemy_to_delete{
+            Some(index) => {
+                let size = self.enemies.len();
+                self.enemies[index] = self.enemies[size - 1];
+                self.enemies.pop();
+                self.current_enemy_index -= 1;
+            }
+            None => ()
         }
     }
 
@@ -48,8 +59,8 @@ impl EnemyManager {
         (x, y)
     }
 
-    pub fn size(&self) -> usize {
-        self.current_enemy_index
+    pub fn size(&mut self) -> usize {
+        self.enemies.len()
     }
 }
 

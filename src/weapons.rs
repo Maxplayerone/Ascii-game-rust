@@ -1,7 +1,7 @@
 pub struct ItemDescriptor {
-    pub durability: i32,
-    pub damage: Option<i32>,
-    pub healing: Option<i32>,
+    pub durability: usize,
+    pub damage: Option<usize>,
+    pub healing: Option<usize>,
 }
 
 #[derive(Copy, Clone)]
@@ -12,6 +12,10 @@ pub enum ItemType {
     Sword,
     Shotgun,
 }
+
+const RIFLE_DAMAGE: usize = 30;
+const SWORD_DAMAGE: usize = 15;
+const SHOTGUN_DAMAGE: usize = 50;
 
 impl ItemType {
     pub fn string(&self) -> &str {
@@ -24,17 +28,29 @@ impl ItemType {
         }
     }
 
+    pub fn get_damage(&self) -> usize{
+        match self{
+            ItemType::Rifle => RIFLE_DAMAGE,
+            ItemType::Sword => SWORD_DAMAGE,
+            ItemType::Shotgun => SHOTGUN_DAMAGE,
+            _ => {
+                println!("This weapon doesn't do any damage!");
+                0
+            }
+        }
+    }
+
     pub fn get_desc(&self) -> ItemDescriptor {
         match self {
             ItemType::Rifle => ItemDescriptor {
                 durability: 5,
-                damage: Some(30),
+                damage: Some(RIFLE_DAMAGE),
                 healing: None,
             },
             ItemType::SmallMed => ItemDescriptor {
                 durability: 1,
                 damage: None,
-                healing: Some(20),
+                healing: Some(25),
             },
             ItemType::BigMed => ItemDescriptor {
                 durability: 1,
@@ -43,12 +59,12 @@ impl ItemType {
             },
             ItemType::Sword => ItemDescriptor {
                 durability: 10,
-                damage: Some(15),
+                damage: Some(SWORD_DAMAGE),
                 healing: None,
             },
             ItemType::Shotgun => ItemDescriptor {
                 durability: 2,
-                damage: Some(50),
+                damage: Some(SHOTGUN_DAMAGE),
                 healing: None,
             },
         }

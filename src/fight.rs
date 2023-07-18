@@ -1,8 +1,8 @@
-use crate::{parser, data_structures};
+use crate::{parser, data_structures, player, weapons, LocationType};
 
 //(NOTE): every enemy has the same amount of health and damage
 pub struct FightManager{
-    enemy_health: usize,
+    enemy_health: i32,
     enemy_damage: usize,
     parser: parser::ParserManager<FightCommand>,
 }
@@ -29,13 +29,32 @@ impl FightManager{
         }
     }
     
-    pub fn update(&mut self) -> bool{
+    pub fn update(&mut self, player: &player::PlayerManager, location_type: &mut LocationType) -> bool{
         let queue: Option<data_structures::Queue<FightCommand>> = self.parser.parse();
         match queue{
             Some(mut queue) => {
                 let command = queue.pop();
                 match command{
-                    FightCommand::Attack => println!("Attacking"),
+                    FightCommand::Attack => {
+                        if let Some(item_index) = player.current_selected_item{
+                            let item = player.items[item_index];
+                            match item{
+                                weapons::ItemType::Rifle => {
+                                    self.enemy_health -= item.get_damage() as i32;
+                                    println!("Enemy health {}", self.enemy_health);
+                                    if self.enemy_health <= 0{
+                                        *location_type = LocationType::Map;
+                                        println!("Enemy dies");
+                                        return true;
+                                    }
+                                }
+                                _ => (),
+                            }
+                        } 
+                        else{
+                            println!("No item selected. Oops");
+                        }
+                    },
                     FightCommand::Select(num) => println!("Selecting {}", num),
                 }
             }

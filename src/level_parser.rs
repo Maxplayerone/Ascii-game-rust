@@ -3,6 +3,7 @@ use std::io::{self, BufRead};
 
 use crate::{chest, math, weapons};
 
+#[derive(Clone)]
 pub struct ParserInfo {
     pub player: math::Pos2,
     pub map_dimensions: math::Pos2,
