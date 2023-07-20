@@ -9,7 +9,7 @@ fn render_player_stats(player: &player::PlayerManager) {
     println!("           *      *");
     println!("           --------");
     println!("Name: {}", player.get_name());
-    println!("Health: {}", player.get_health());
+    println!("Health: {}", player.health);
     println!("Item count: {}", player.get_item_count());
     println!("-------------------------\n");
 }

@@ -6,14 +6,14 @@ pub struct PlayerManager {
     pub items: Vec<weapons::Item>,
     pub got_new_item: bool,
 
-    health: usize,
+    pub health: i32,
     name: String,
 
     pub current_selected_item: Option<usize>,
 }
 
 impl PlayerManager {
-    pub fn new(pos: math::Pos2, name: String, health: usize) -> Self {
+    pub fn new(pos: math::Pos2, name: String, health: i32) -> Self {
         Self {
             pos,
             name,
@@ -61,10 +61,6 @@ impl PlayerManager {
 
     pub fn get_name(&self) -> String {
         self.name.clone()
-    }
-
-    pub fn get_health(&self) -> usize {
-        self.health
     }
 
     pub fn get_item_count(&self) -> usize {
