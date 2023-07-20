@@ -1,6 +1,6 @@
 use crate::{math, weapons};
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Chest {
     pub pos: math::Pos2,
     item_type: weapons::ItemType,

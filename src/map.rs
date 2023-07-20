@@ -31,8 +31,9 @@ pub enum MapCommand {
 }
 
 impl MapManager {
-    pub fn new() -> (Self, math::Pos2) {
+    pub fn new(filename: String) -> (Self, math::Pos2) {
         let (map, map_info) = level_parser::parse_level(
+            filename,
             PLAYER_SYMBOL,
             ENEMY_SYMBOL,
             CHEST_SYMBOL,
@@ -145,7 +146,6 @@ impl MapManager {
                                     let size = self.chests.len();
                                     for i in 0..size {
                                         if are_colliding(&self.chests[i].pos, &player.pos) {
-                                            println!("heeeeeeelo");
                                             player.add_item(*self.chests[i].get_item());
                                             //we're moving the value from chests cuz we're deleting
                                             //the chest thingy down there
@@ -155,7 +155,6 @@ impl MapManager {
                                             } else {
                                                 self.chests.pop();
                                             }
-                                            println!("Colliding");
                                         }
                                     }
 
@@ -206,10 +205,10 @@ impl MapManager {
         self.flush();
 
         //rendering player
-        let width_usize: usize = self.map_dimensions.x.try_into().unwrap();
+        let mut width_usize: usize = self.map_dimensions.x.try_into().unwrap();
+        width_usize += 1;
         let (x, y) = player.get_position();
         self.map[y * width_usize + x] = PLAYER_SYMBOL;
-
         //rendering enemies
         for i in 0..self.enemy_manager.size() {
             let (x, y) = self.enemy_manager.get_enemy_position(i);

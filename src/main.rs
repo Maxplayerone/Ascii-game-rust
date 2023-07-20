@@ -6,6 +6,7 @@ mod inventory;
 mod level_parser;
 mod map;
 mod math;
+mod menu;
 mod parser;
 mod player;
 mod weapons;
@@ -28,18 +29,14 @@ pub enum LocationType {
 }
 
 impl GameState {
-    fn new(name: String) -> Self {
-        let (map_manager, player_pos) = map::MapManager::new();
+    fn new(name: String, filename: String) -> Self {
+        let (map_manager, player_pos) = map::MapManager::new(filename);
         let inventory_manager = inventory::InventoryManager::new(
             inventory::DisableNodeRendering(false),
-            inventory::DisablePlayerStatsRendering(true),
+            inventory::DisablePlayerStatsRendering(false),
         );
         let fight_manager = fight::FightManager::new();
-        let mut player_manager = player::PlayerManager::new(player_pos, name, 100);
-
-        player_manager.add_item(weapons::ItemType::Rifle);
-        player_manager.add_item(weapons::ItemType::BigMed);
-        player_manager.add_item(weapons::ItemType::Shotgun);
+        let player_manager = player::PlayerManager::new(player_pos, name, 100);
 
         Self {
             map_manager,
@@ -78,10 +75,21 @@ fn main() {
     let mut name = String::new();
     let _byte_size = std::io::stdin().read_line(&mut name).unwrap();
 
-    let mut state = GameState::new(name);
-    let mut playing = true;
-    while playing {
-        state.render_location();
-        playing = state.update_location();
+    let mut prestate = menu::MenuState::new();
+    let mut filename: Option<String> = None;
+    while filename.is_none() {
+        prestate.render();
+        filename = prestate.update();
+    }
+
+    if Some("quit".to_string()) != filename {
+        if let Some(filename) = filename {
+            let mut state = GameState::new(name, filename);
+            let mut playing = true;
+            while playing {
+                state.render_location();
+                playing = state.update_location();
+            }
+        }
     }
 }

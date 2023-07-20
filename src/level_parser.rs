@@ -1,3 +1,4 @@
+use rand::Rng;
 use std::fs::File;
 use std::io::{self, BufRead};
 
@@ -25,14 +26,16 @@ impl ParserInfo {
 }
 
 pub fn parse_level(
+    filename: String,
     player_symbol: char,
     enemy_symbol: char,
     chest_symbol: char,
     unbreakable_symbol: char,
 ) -> (Vec<char>, ParserInfo) {
     // Open the file in read-only mode
-    let file = File::open("src/level_one.sag").unwrap();
-
+    let filename = filename.trim();
+    let filepath = format!("src/{}.sag", filename);
+    let file = File::open(filepath).expect("Incorrect filename");
     // Create a buffer reader to read the file line by line
     let reader = io::BufReader::new(file);
 
@@ -67,10 +70,32 @@ pub fn parse_level(
             } else if c == chest_symbol {
                 let x: i32 = i % map_width;
                 let y: i32 = i / map_width;
-                info.chests.push(chest::Chest::new(
-                    math::Pos2::new(x, y),
-                    weapons::ItemType::Rifle,
-                ));
+
+                let mut rng = rand::thread_rng();
+                let random_number = rng.gen_range(0..5);
+                match random_number {
+                    0 => info.chests.push(chest::Chest::new(
+                        math::Pos2::new(x, y),
+                        weapons::ItemType::Rifle,
+                    )),
+                    1 => info.chests.push(chest::Chest::new(
+                        math::Pos2::new(x, y),
+                        weapons::ItemType::SmallMed,
+                    )),
+                    2 => info.chests.push(chest::Chest::new(
+                        math::Pos2::new(x, y),
+                        weapons::ItemType::BigMed,
+                    )),
+                    3 => info.chests.push(chest::Chest::new(
+                        math::Pos2::new(x, y),
+                        weapons::ItemType::Sword,
+                    )),
+                    4 => info.chests.push(chest::Chest::new(
+                        math::Pos2::new(x, y),
+                        weapons::ItemType::Shotgun,
+                    )),
+                    _ => (),
+                }
             } else if c == unbreakable_symbol {
                 let x: i32 = i % map_width;
                 let y: i32 = i / map_width;

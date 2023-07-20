@@ -104,16 +104,15 @@ impl FightManager {
                         return self.update(player, location_type);
                     }
                     FightCommand::Tut => {
-                            println!("----------------------------------------------------");
-                            println!("                Fight State tutorial");
-                            println!("attack- attacks with a currently selected weapon");
-                            println!("inv- opening the inventory while not wasting a turn \n (you cannot equip items here)");
-                            println!("-to select an item you type the number corresponding to the item index in the inventory");
-                            println!("tut - showing this tutorial :>");
-                            println!("quit - quitting the game\n");
-                            println!("----------------------------------------------------");
+                        println!("----------------------------------------------------");
+                        println!("                Fight State tutorial");
+                        println!("attack- attacks with a currently selected weapon");
+                        println!("inv- opening the inventory while not wasting a turn \n (you cannot equip items here)");
+                        println!("-to select an item you type the number corresponding to the item index in the inventory");
+                        println!("tut - showing this tutorial :>");
+                        println!("quit - quitting the game\n");
+                        println!("----------------------------------------------------");
                         return self.update(player, location_type);
-                        
                     }
                     FightCommand::Quit => return false,
                 }

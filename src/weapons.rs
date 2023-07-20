@@ -4,7 +4,7 @@ pub struct ItemDescriptor {
     pub healing: Option<usize>,
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum ItemType {
     Rifle,
     SmallMed,
