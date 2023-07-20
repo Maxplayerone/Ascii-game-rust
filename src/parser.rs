@@ -85,7 +85,6 @@ impl<T: Copy> ParserManager<T> {
 enum HelpfulMessage {
     IncorrectCommand,
     CommandTypedIncorrectly,
-    GameTutorial,
 }
 
 #[derive(PartialEq)]
@@ -209,21 +208,6 @@ fn show_helpful_message(message: HelpfulMessage) {
             println!("CommandError: command typed incorrectly");
             println!("\nupps, a misstroke \njust write the command again\nor check 'info' to see\nhow to write the commands");
             println!("-------------------------------");
-        }
-        HelpfulMessage::GameTutorial => {
-            println!("----------------------------------------------------");
-            println!("                    Game tutorial");
-            println!("\nIn this game you have a few commands incluing");
-            println!("right - moving right");
-            println!("left - moving left");
-            println!("up - moving up");
-            println!("down - moving down");
-            println!("wait - waiting a game tick without doing anything");
-            println!("info - showing this tutorial :>");
-            println!("quit - quitting the game\n");
-            println!("The game updates whenever you send a command\nwe call that game tick\n");
-            println!("You can use a single command multiple times ex\n3 right 2 up\nmoves right 3 times and up 2 times");
-            println!("----------------------------------------------------");
         }
     }
 }

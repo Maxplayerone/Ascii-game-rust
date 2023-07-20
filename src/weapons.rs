@@ -31,7 +31,6 @@ pub struct Item {
     current_durability: i32,
 }
 
-
 impl Item {
     pub fn new(item: ItemType) -> Self {
         Self {

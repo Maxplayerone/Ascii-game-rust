@@ -41,7 +41,7 @@ enum InvCommand {
     Equip,
     Drop,
     Select(usize),
-    Tutorial,
+    Tut,
 }
 
 pub struct InventoryManager {
@@ -76,7 +76,7 @@ impl InventoryManager {
         let quit_progress = parser::WordProgress::new("quit".to_string(), InvCommand::Quit);
         let equip_progress = parser::WordProgress::new("equip".to_string(), InvCommand::Equip);
         let drop_progress = parser::WordProgress::new("drop".to_string(), InvCommand::Drop);
-        let tutorial_progress = parser::WordProgress::new("info".to_string(), InvCommand::Tutorial);
+        let tutorial_progress = parser::WordProgress::new("tut".to_string(), InvCommand::Tut);
 
         let mut searched_words = Vec::new();
         searched_words.push(map_progress);
@@ -151,8 +151,16 @@ impl InventoryManager {
                         InvCommand::Select(item_number) => {
                             self.last_number_selected = Some(item_number);
                         }
-                        InvCommand::Tutorial => {
-                            println!("Tutorial");
+                        InvCommand::Tut => {
+                            println!("----------------------------------------------------");
+                            println!("              Inventory State tutorial");
+                            println!("drop - dropping selected item");
+                            println!("equip - equipping selected item");
+                            println!("To select an item you type the number of the item\n (the item at the bottom is 0, then it's 1 etc)");
+                            println!("tut - showing this tutorial :>");
+                            println!("map - changing state to map");
+                            println!("quit - quitting the game\n");
+                            println!("----------------------------------------------------");
                         }
                     }
                 }

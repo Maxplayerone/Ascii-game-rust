@@ -26,8 +26,8 @@ pub enum MapCommand {
     Wait,
     Quit,
     Inv,
-    Info,
     MoveCount(usize),
+    Tut,
 }
 
 impl MapManager {
@@ -51,7 +51,7 @@ impl MapManager {
         let wait = parser::WordProgress::new("wait".to_string(), MapCommand::Wait);
         let quit = parser::WordProgress::new("quit".to_string(), MapCommand::Quit);
         let inv = parser::WordProgress::new("inv".to_string(), MapCommand::Inv);
-        let info = parser::WordProgress::new("tut".to_string(), MapCommand::Info);
+        let info = parser::WordProgress::new("tut".to_string(), MapCommand::Tut);
 
         let mut searched_words = Vec::new();
         searched_words.push(left);
@@ -118,8 +118,21 @@ impl MapManager {
                         MapCommand::Inv => {
                             *location_type = LocationType::Inventory;
                         }
-                        MapCommand::Info => {
-                            println!("showing the tutorial...");
+                        MapCommand::Tut => {
+                            println!("----------------------------------------------------");
+                            println!("                Map State tutorial");
+                            println!("right - moving right");
+                            println!("left - moving left");
+                            println!("up - moving up");
+                            println!("down - moving down");
+                            println!("wait - waiting a game tick without doing anything");
+                            println!("tut - showing this tutorial :>");
+                            println!("inv - changing state to tutorial");
+                            println!("quit - quitting the game\n");
+                            println!("The game updates whenever you send a command\nwe call that game tick\n");
+                            println!("You can use a single command multiple times ex\n3 right 2 up\nmoves right 3 times and up 2 times");
+                            println!("----------------------------------------------------");
+                            self.update(location_type, player);
                         }
                         MapCommand::Left
                         | MapCommand::Right
