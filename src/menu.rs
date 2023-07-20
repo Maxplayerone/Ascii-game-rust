@@ -12,7 +12,7 @@ enum MenuCommand {
 
 impl MenuState {
     pub fn new() -> Self {
-        let start = parser::WordProgress::new("start".to_string(), MenuCommand::Start);
+        let start = parser::WordProgress::new("play".to_string(), MenuCommand::Start);
         let quit = parser::WordProgress::new("quit".to_string(), MenuCommand::Quit);
         let mut searched_words = Vec::new();
         searched_words.push(start);

@@ -5,6 +5,7 @@ const PLAYER_SYMBOL: char = '0';
 const GRASS_SYMBOL: char = 'x';
 const CHEST_SYMBOL: char = '=';
 const UNBREAKABLE_SYMBOL: char = '&';
+const FINISH_SYMBOL: char = '*';
 
 pub struct MapManager {
     map: Vec<char>,
@@ -15,6 +16,8 @@ pub struct MapManager {
     enemy_manager: enemy::EnemyManager,
     chests: Vec<chest::Chest>,
     unbreakable: Vec<math::Pos2>,
+    finish: math::Pos2,
+    move_count: i32,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -38,11 +41,13 @@ impl MapManager {
             ENEMY_SYMBOL,
             CHEST_SYMBOL,
             UNBREAKABLE_SYMBOL,
+            FINISH_SYMBOL,
         );
         let map_dimensions = map_info.map_dimensions;
         let enemy_manager = enemy::EnemyManager::new(map_info.enemies);
         let chests = map_info.chests;
         let player_pos = map_info.player;
+        let finish = map_info.finish;
         let unbreakable = map_info.unbreakable;
 
         let left = parser::WordProgress::new("left".to_string(), MapCommand::Left);
@@ -78,7 +83,9 @@ impl MapManager {
                 parser,
                 chests,
                 unbreakable,
+                finish,
                 enemy_manager,
+                move_count: 0,
             },
             player_pos,
         )
@@ -140,8 +147,18 @@ impl MapManager {
                         | MapCommand::Up
                         | MapCommand::Down => {
                             for _ in 0..move_multiplier {
+                                self.move_count += 1;
                                 if self.check_if_player_can_move(&command, player.get_position()) {
                                     player.update(command);
+                                    //player + finish collission detection + resolution
+                                    if are_colliding(&self.finish, &player.pos){
+                                        println!("-----------------");
+                                        println!("You've won!");
+                                        println!("move count: {}", self.move_count);
+                                        println!("-----------------");
+                                        return false;
+                                    }
+
                                     //player + chest collission detection + resolution
                                     let size = self.chests.len();
                                     for i in 0..size {
@@ -168,6 +185,7 @@ impl MapManager {
                             move_multiplier = 1;
                         }
                         MapCommand::Wait => {
+                            self.move_count += 1;
                             for _ in 0..move_multiplier {
                                 self.enemy_manager.update(
                                     &player.pos,
@@ -228,6 +246,10 @@ impl MapManager {
             let y: usize = self.unbreakable[i].y.try_into().unwrap();
             self.map[y * width_usize + x] = UNBREAKABLE_SYMBOL;
         }
+        //rendering finish
+        let x: usize = self.finish.x.try_into().unwrap();
+        let y: usize = self.finish.y.try_into().unwrap();
+        self.map[y * width_usize + x] = FINISH_SYMBOL;
 
         //rendering the rest
         let map_string: String = self.map.iter().collect();

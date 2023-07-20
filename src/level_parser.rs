@@ -11,12 +11,14 @@ pub struct ParserInfo {
     pub enemies: Vec<math::Pos2>,
     pub chests: Vec<chest::Chest>,
     pub unbreakable: Vec<math::Pos2>,
+    pub finish: math::Pos2,
 }
 
 impl ParserInfo {
     fn new() -> Self {
         Self {
             player: math::Pos2::new(0, 0),
+            finish: math::Pos2::new(0, 0),
             map_dimensions: math::Pos2::new(0, 0),
             enemies: Vec::new(),
             chests: Vec::new(),
@@ -31,6 +33,7 @@ pub fn parse_level(
     enemy_symbol: char,
     chest_symbol: char,
     unbreakable_symbol: char,
+    finish_symbol: char,
 ) -> (Vec<char>, ParserInfo) {
     // Open the file in read-only mode
     let filename = filename.trim();
@@ -100,6 +103,10 @@ pub fn parse_level(
                 let x: i32 = i % map_width;
                 let y: i32 = i / map_width;
                 info.unbreakable.push(math::Pos2::new(x, y));
+            } else if c == finish_symbol {
+                let x: i32 = i % map_width;
+                let y: i32 = i / map_width;
+                info.finish = math::Pos2::new(x, y);
             }
             map.push(c);
             i += 1;
