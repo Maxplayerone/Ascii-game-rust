@@ -13,6 +13,7 @@ enum FightCommand {
     Attack,
     Inv,
     Quit,
+    Heal,
     Tut,
 }
 
@@ -40,6 +41,7 @@ impl FightManager {
     pub fn new() -> Self {
         let attack = parser::WordProgress::new("attack".to_string(), FightCommand::Attack);
         let inv = parser::WordProgress::new("inv".to_string(), FightCommand::Inv);
+        let heal = parser::WordProgress::new("heal".to_string(), FightCommand::Heal);
         let quit = parser::WordProgress::new("quit".to_string(), FightCommand::Quit);
         let tut = parser::WordProgress::new("tut".to_string(), FightCommand::Tut);
 
@@ -47,6 +49,7 @@ impl FightManager {
         searched_words.push(attack);
         searched_words.push(inv);
         searched_words.push(quit);
+        searched_words.push(heal);
         searched_words.push(tut);
 
         for i in 0..10 {
@@ -97,6 +100,18 @@ impl FightManager {
                             player.current_selected_item = Some(num);
                         }
                     }
+                    FightCommand::Heal => {
+                        if let Some(item_index) = player.current_selected_item {
+                            let mut item = player.items[item_index];
+                            player.health += item.get_health();
+                            if item.decrease_durability() {
+                                player.current_selected_item = None;
+                            }
+
+                        } else {
+                            println!("No item selected. Oops");
+                        }
+                    }
                     FightCommand::Inv => {
                         for item in &player.items {
                             render_item(item);
@@ -111,6 +126,7 @@ impl FightManager {
                         println!("-to select an item you type the number corresponding to the item index in the inventory");
                         println!("tut - showing this tutorial :>");
                         println!("quit - quitting the game\n");
+                        println!("heal - heals you with the currently selected item\n");
                         println!("----------------------------------------------------");
                         return self.update(player, location_type);
                     }

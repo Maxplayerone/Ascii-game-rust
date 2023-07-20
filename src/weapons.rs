@@ -59,6 +59,10 @@ impl Item {
     pub fn get_desc(&self) -> ItemDescriptor {
         self.item_type.get_desc()
     }
+
+    pub fn get_health(&self) -> i32{
+        self.item_type.get_health()
+    }
 }
 
 impl ItemType {
@@ -91,6 +95,14 @@ impl ItemType {
             ItemType::Shotgun => SHOTGUN_DURABILITY,
             ItemType::BigMed => SMALL_MED_DURABILITY,
             ItemType::SmallMed => BIG_MED_DURABILITY,
+        }
+    }
+
+    pub fn get_health(&self) -> i32 {
+        match self {
+            ItemType::SmallMed => 25,
+            ItemType::BigMed => 50,
+             _ => 0,
         }
     }
 
